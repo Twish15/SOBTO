@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_sobto_inherit" model="ir.ui.view">
+        <field name="name">account.move.form.sobto.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Champ Objet de la facture, avant les lignes -->
+            <xpath expr="//field[@name='invoice_line_ids']" position="before">
+                <group>
+                    <field name="x_objet"
+                           string="Objet"
+                           placeholder="ex: TRANSPORT D'HYDROCARBURES (CODE 404697)"
+                           colspan="2"/>
+                </group>
+            </xpath>
+
+            <!-- Colonnes BL / BE / Camion avant la description produit -->
+            <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='product_id']" position="before">
+                <field name="x_date_bl"    optional="show" string="Date B.L"/>
+                <field name="x_numero_bl"  optional="show" string="N° B.L"/>
+                <field name="x_date_be"    optional="show" string="Date B.E"/>
+                <field name="x_numero_be"  optional="show" string="N° B.E"/>
+                <field name="x_numero_camion" optional="show" string="N° Camion"/>
+            </xpath>
+
+            <!-- Colonne Parcours avant le prix unitaire (Taux) -->
+            <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_unit']" position="before">
+                <field name="x_parcours" optional="show" string="Parcours"/>
+            </xpath>
+
+            <!-- Montant en lettres après les lignes de facture -->
+            <xpath expr="//field[@name='invoice_line_ids']" position="after">
+                <group string="Arrêté">
+                    <field name="x_montant_lettres"
+                           string="Arrêtée la présente facture à la somme de"
+                           readonly="1"
+                           colspan="2"
+                           attrs="{'invisible': [('x_montant_lettres', '=', False)]}"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
