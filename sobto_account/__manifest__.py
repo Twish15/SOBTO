@@ -1,13 +1,16 @@
 {
     'name': 'SOBTO - Personnalisation Facturation',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.4.0',
     'category': 'Accounting/Accounting',
     'summary': 'Personnalisation du module de facturation pour SOBTO',
     'author': 'SOBTO',
     'depends': ['account'],
+    'post_init_hook': 'post_init_hook',
     'data': [
         'views/res_partner_views.xml',
         'views/account_move_views.xml',
+        'reports/report_invoice_sobto.xml',
+        'reports/report_invoice_actions.xml',
     ],
     'installable': True,
     'auto_install': False,

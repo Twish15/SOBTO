@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template SOBTO complet - Remplace le rapport facture par défaut (pas d'héritage xpath) -->
+    <template id="report_invoice_sobto">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .sobto-title-box { background-color: #D9E5F3; padding: 10px 20px; text-align: center; font-weight: bold; font-size: 16px; margin: 15px 0; }
+                            .sobto-objet-box { background-color: #D9E5F3; padding: 10px 20px; text-align: center; font-weight: bold; margin: 15px 0; }
+                            .sobto-table-invoice { border: 1px solid black; width: 100%; border-collapse: collapse; }
+                            .sobto-table-invoice th, .sobto-table-invoice td { border: 1px solid black; padding: 6px; }
+                            .sobto-table-invoice th { text-align: center; font-weight: bold; background-color: #f0f0f0; }
+                            .sobto-montant-ttc { color: #CC0000; font-weight: bold; }
+                            .sobto-signature { text-align: right; margin-top: 40px; font-weight: bold; }
+                        </style>
+
+                        <!-- 1. Date et lieu à droite -->
+                        <div style="text-align: right; margin-bottom: 10px;">
+                            <span t-out="o.company_id.partner_id.city or 'Ouagadougou'"/>, le
+                            <span t-field="o.invoice_date" t-options='{"widget": "date"}'/>
+                        </div>
+
+                        <!-- 2. Titre FACTURE en encadré bleu -->
+                        <div class="sobto-title-box" t-if="o.name">
+                            FACTURE <span t-out="o.name"/>
+                        </div>
+
+                        <!-- 3. DOIT : Client -->
+                        <div class="mb-3">
+                            <div><strong>DOIT : </strong><span t-field="o.partner_id.name"/></div>
+                            <div t-if="o.partner_id.street" t-out="o.partner_id.street"/>
+                            <div t-if="o.partner_id.street2" t-out="o.partner_id.street2"/>
+                            <div t-if="o.partner_id.city or o.partner_id.zip">
+                                <span t-out="o.partner_id.zip or ''"/> <span t-out="o.partner_id.city or ''"/>
+                            </div>
+                            <div t-if="o.partner_id.country_id" t-out="o.partner_id.country_id.name"/>
+                            <div t-if="o.partner_id.x_rccm"><strong>N° RCCM :</strong> <span t-out="o.partner_id.x_rccm"/></div>
+                            <div t-if="o.partner_id.x_ifu"><strong>N° IFU :</strong> <span t-out="o.partner_id.x_ifu"/></div>
+                            <div t-if="o.partner_id.phone"><strong>TEL :</strong> <span t-out="o.partner_id.phone"/></div>
+                            <div t-if="o.partner_id.x_dge_rni"><strong>DGE/RNI :</strong> <span t-out="o.partner_id.x_dge_rni"/></div>
+                        </div>
+
+                        <!-- 4. OBJET -->
+                        <div t-if="o.x_objet" class="sobto-objet-box">
+                            OBJET : <span t-out="o.x_objet"/>
+                        </div>
+
+                        <!-- 5. Tableau des lignes -->
+                        <table class="table table-sm sobto-table-invoice">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Date et N° de B.L</th>
+                                    <th class="text-center">Date et N° de B.E</th>
+                                    <th class="text-center">N° Camion</th>
+                                    <th class="text-center">Quantités</th>
+                                    <th class="text-center">Produit</th>
+                                    <th class="text-center">Parcours</th>
+                                    <th class="text-right">Taux</th>
+                                    <th class="text-right">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="[line for line in o.invoice_line_ids if not line.display_type]" t-as="line">
+                                    <td class="text-center">
+                                        <span t-field="line.x_date_bl" t-options='{"widget": "date"}'/>
+                                        <t t-if="line.x_numero_bl"> - <span t-out="line.x_numero_bl"/></t>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.x_date_be" t-options='{"widget": "date"}'/>
+                                        <t t-if="line.x_numero_be"> - <span t-out="line.x_numero_be"/></t>
+                                    </td>
+                                    <td class="text-center"><span t-field="line.x_numero_camion"/></td>
+                                    <td class="text-right">
+                                        <span t-field="line.quantity"/>
+                                        <t t-if="line.product_uom_id"> <span t-out="line.product_uom_id.name"/></t>
+                                    </td>
+                                    <td><span t-field="line.name"/></td>
+                                    <td class="text-center"><span t-field="line.x_parcours"/></td>
+                                    <td class="text-right"><span t-field="line.price_unit" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                    <td class="text-right"><span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- 6. Totaux -->
+                        <div class="mt-4 row">
+                            <div class="col-7"></div>
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>MONTANT HT :</strong></div>
+                                    <div class="col-6 text-end"><span t-field="o.amount_untaxed" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></div>
+                                </div>
+                                <t t-set="tax_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type == 'tax')"/>
+                                <t t-foreach="tax_lines" t-as="tax_line">
+                                    <div class="row mb-2">
+                                        <div class="col-6"><span t-out="tax_line.name"/></div>
+                                        <div class="col-6 text-end"><span t-field="tax_line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></div>
+                                    </div>
+                                </t>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>MONTANT TTC :</strong></div>
+                                    <div class="col-6 text-end sobto-montant-ttc"><span t-field="o.amount_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Arrêté + Signature -->
+                        <div t-if="o.x_montant_lettres" class="mt-4 mb-2">
+                            <strong>Arrêtée la présente facture à la somme de </strong>
+                            <strong t-out="o.x_montant_lettres"/>
+                        </div>
+                        <div class="sobto-signature">
+                            Directeur Général
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
