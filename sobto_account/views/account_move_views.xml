@@ -37,7 +37,7 @@
                            string="Arrêtée la présente facture à la somme de"
                            readonly="1"
                            colspan="2"
-                           attrs="{'invisible': [('x_montant_lettres', '=', False)]}"/>
+                           invisible="not x_montant_lettres"/>
                 </group>
             </xpath>
 
