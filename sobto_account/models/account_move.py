@@ -20,6 +20,10 @@ class AccountMove(models.Model):
         compute='_compute_invoice_date_fr',
         help='Date de facture formatée en français',
     )
+    x_signataire = fields.Char(
+        string='Signataire',
+        help='Nom du signataire (ex: Yaya OUATTARA)',
+    )
     x_objet = fields.Char(
         string='Objet',
         help='Objet de la facture (ex: TRANSPORT D\'HYDROCARBURES)',

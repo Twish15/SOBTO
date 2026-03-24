@@ -6,6 +6,13 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
 
+            <!-- Signataire -->
+            <xpath expr="//field[@name='invoice_line_ids']" position="before">
+                <group>
+                    <field name="x_signataire" string="Signataire" placeholder="ex: Yaya OUATTARA"/>
+                </group>
+            </xpath>
+
             <!-- Champ Objet de la facture, avant les lignes -->
             <xpath expr="//field[@name='invoice_line_ids']" position="before">
                 <group>
