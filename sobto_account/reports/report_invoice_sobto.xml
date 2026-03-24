@@ -33,6 +33,28 @@
                             .sobto-client { margin-bottom: 12px; font-size: 11px; }
                             .sobto-client .client-name { font-weight: bold; }
                             .sobto-client .client-indent { margin-left: 60px; }
+                            .sobto-page-footer {
+                                position: fixed;
+                                bottom: 0;
+                                left: 0;
+                                right: 0;
+                                font-size: 7.5pt;
+                                font-family: Arial, sans-serif;
+                            }
+                            .sobto-footer-border {
+                                height: 8px;
+                                background: repeating-linear-gradient(
+                                    -45deg,
+                                    #4472C4 0px, #4472C4 4px,
+                                    #7FAADC 4px, #7FAADC 8px
+                                );
+                            }
+                            .sobto-footer-content {
+                                background: white;
+                                text-align: center;
+                                padding: 4px 10px 2px 10px;
+                                border-top: 1px solid #ccc;
+                            }
                         </style>
 
                         <!-- 1. Date et lieu -->
@@ -154,6 +176,26 @@
                             Directeur G&#233;n&#233;ral
                         </div>
 
+                        <!-- 8. Pied de page societe -->
+                        <div class="sobto-page-footer">
+                            <div class="sobto-footer-border"></div>
+                            <div class="sobto-footer-content">
+                                <strong t-out="o.company_id.name"/>
+                                <br/>
+                                <span t-out="o.company_id.partner_id.street or o.company_id.street or &apos;&apos;"/>
+                                <t t-if="o.company_id.phone">, Tel : <span t-out="o.company_id.phone"/></t>
+                                <t t-if="o.company_id.partner_id.x_rccm">, RCCM N&#176; <span t-out="o.company_id.partner_id.x_rccm"/></t>
+                                <t t-if="o.company_id.partner_id.x_ifu">, IFU N&#176; <span t-out="o.company_id.partner_id.x_ifu"/></t>
+                                <t t-if="o.company_id.partner_id.bank_ids">
+                                    <br/>
+                                    <t t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
+                                        CPTE <t t-out="bank.bank_id.name or &apos;&apos;"/> N&#176;<t t-out="bank.acc_number or &apos;&apos;"/>
+                                        <t t-if="bank.acc_holder_name"> INTITULE <t t-out="bank.acc_holder_name"/></t>
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+
                     </div>
                 </t>
             </t>
@@ -170,3 +212,4 @@
     </template>
 
 </odoo>
+
