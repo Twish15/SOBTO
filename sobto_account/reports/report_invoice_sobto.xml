@@ -4,11 +4,11 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
 
-                <!-- ══ EN-TETE : logo a droite ══ -->
+                <!-- ══ EN-TETE : logo a gauche ══ -->
                 <div class="header">
-                    <div style="border-bottom:3px solid #4472C4;padding:8px 25px;text-align:right;background-color:#ffffff;">
+                    <div style="padding:8px 25px;text-align:left;background-color:#ffffff;">
                         <img t-if="o.company_id.logo"
-                             style="max-height:90px;max-width:160px;"
+                             style="max-height:120px;max-width:220px;"
                              t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
                     </div>
                 </div>
@@ -146,6 +146,7 @@
                             </div>
                             <div style="line-height:1.5;">
                                 <span t-out="o.company_id.partner_id.street or o.company_id.street or ''"/>
+                                <t t-if="o.company_id.partner_id.street2">, <span t-out="o.company_id.partner_id.street2"/></t>
                                 <t t-if="o.company_id.phone">, Tel: <span t-out="o.company_id.phone"/></t>
                                 <t t-if="o.company_id.partner_id.x_rccm">, RCCM N&#176; <span t-out="o.company_id.partner_id.x_rccm"/></t>
                                 <t t-if="o.company_id.partner_id.x_ifu">, IFU N&#176; <span t-out="o.company_id.partner_id.x_ifu"/></t>
