@@ -6,31 +6,24 @@
 
                 <!-- ══ EN-TETE : logo a droite ══ -->
                 <div class="header">
-                    <table style="width:100%;border-collapse:collapse;border-bottom:3px solid #4472C4;padding:8px 25px;background-color:#ffffff;">
-                        <tr>
-                            <td style="vertical-align:middle;padding-left:10px;">
-                                <!-- Cote gauche vide -->
-                            </td>
-                            <td style="text-align:right;vertical-align:middle;padding-right:10px;">
-                                <img t-if="o.company_id.logo"
-                                     style="max-height:90px;max-width:160px;"
-                                     t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
-                            </td>
-                        </tr>
-                    </table>
+                    <div style="border-bottom:3px solid #4472C4;padding:8px 25px;text-align:right;background-color:#ffffff;">
+                        <img t-if="o.company_id.logo"
+                             style="max-height:90px;max-width:160px;"
+                             t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
+                    </div>
                 </div>
 
                 <!-- ══ CONTENU ══ -->
                 <div class="article" style="margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;">
 
                     <!-- Ville et date : premier element apres le header -->
-                    <div style="text-align:right;margin-bottom:10px;margin-top:8px;font-size:12px;color:#333;font-family:Arial,Helvetica,sans-serif;">
+                    <div style="text-align:right;margin-bottom:8px;margin-top:0;padding-top:0;font-size:12px;color:#333;font-family:Arial,Helvetica,sans-serif;">
                         <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
                         <t t-out="o.x_invoice_date_fr"/>
                     </div>
 
                     <!-- Titre -->
-                    <div style="background-color:#4472C4;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
+                    <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
                         FACTURE <span t-out="o.name"/>
                     </div>
 
@@ -47,7 +40,7 @@
                     </div>
 
                     <!-- Objet -->
-                    <div t-if="o.x_objet" style="background-color:#4472C4;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
+                    <div t-if="o.x_objet" style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
                         OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
                     </div>
 
@@ -176,7 +169,7 @@
         <xpath expr="//t[@t-if]" position="after">
             <t t-elif="o._get_name_invoice_report() == 'sobto_account.report_invoice_sobto'"
                t-call="sobto_account.report_invoice_sobto"
-               t-lang="lang"/>
+               t-lang="'fr_FR'"/>
         </xpath>
     </template>
 
