@@ -3,61 +3,132 @@
     <template id="report_invoice_sobto">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="web.external_layout">
-                    <div class="page">
-                        <style>
-                            .sobto-title-box {
-                                background-color: #4472C4;
-                                color: white;
-                                padding: 8px 20px;
-                                text-align: center;
-                                font-weight: bold;
-                                font-size: 14px;
-                                margin: 12px 0;
-                                letter-spacing: 1px;
-                            }
-                            .sobto-objet-box {
-                                background-color: #4472C4;
-                                color: white;
-                                padding: 8px 20px;
-                                text-align: center;
-                                font-weight: bold;
-                                font-size: 12px;
-                                margin: 12px 0;
-                                letter-spacing: 1px;
-                            }
-                            .sobto-table { border: 1px solid #999; width: 100%; border-collapse: collapse; font-size: 10px; }
-                            .sobto-table th, .sobto-table td { border: 1px solid #999; padding: 5px 6px; }
-                            .sobto-table th { text-align: center; font-weight: bold; background-color: #f2f2f2; }
-                            .sobto-montant-ttc { color: #CC0000; font-weight: bold; }
-                            .sobto-client { margin-bottom: 12px; font-size: 11px; }
-                            .sobto-client .client-name { font-weight: bold; }
-                            .sobto-client .client-indent { margin-left: 60px; }
-                            .sobto-page-footer {
-                                position: fixed;
-                                bottom: 0;
-                                left: 0;
-                                right: 0;
-                                font-size: 7.5pt;
-                                font-family: Arial, sans-serif;
-                            }
-                            .sobto-footer-border {
-                                height: 8px;
-                                background: repeating-linear-gradient(
-                                    -45deg,
-                                    #4472C4 0px, #4472C4 4px,
-                                    #7FAADC 4px, #7FAADC 8px
-                                );
-                            }
-                            .sobto-footer-content {
-                                background: white;
-                                text-align: center;
-                                padding: 4px 10px 2px 10px;
-                                border-top: 1px solid #ccc;
-                            }
-                        </style>
+                <div class="article">
+                    <style>
+                        @page {
+                            margin-top:   140px;
+                            margin-bottom: 85px;
+                            margin-left:   20px;
+                            margin-right:  20px;
+                        }
+                        body { font-family: Arial, sans-serif; font-size: 11px; }
 
-                        <!-- 1. Date et lieu -->
+                        /* ── En-tete fixe ── */
+                        .sobto-header {
+                            position: fixed;
+                            top: -130px;
+                            left: 0; right: 0;
+                            height: 120px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            padding: 8px 20px;
+                            border-bottom: 2px solid #4472C4;
+                            background: white;
+                        }
+                        .sobto-header img {
+                            max-height: 90px;
+                            max-width: 180px;
+                        }
+                        .sobto-header .header-right {
+                            text-align: right;
+                            font-size: 10px;
+                            color: #444;
+                        }
+                        .sobto-header .header-right strong {
+                            display: block;
+                            font-size: 11px;
+                            color: #222;
+                        }
+
+                        /* ── Pied de page fixe ── */
+                        .sobto-footer {
+                            position: fixed;
+                            bottom: -75px;
+                            left: 0; right: 0;
+                            height: 70px;
+                        }
+                        .sobto-footer-border {
+                            height: 9px;
+                            background: repeating-linear-gradient(
+                                -45deg,
+                                #4472C4 0px, #4472C4 5px,
+                                #7FAADC 5px, #7FAADC 10px
+                            );
+                        }
+                        .sobto-footer-content {
+                            background: white;
+                            text-align: center;
+                            font-size: 7.5pt;
+                            padding: 3px 10px;
+                            border-top: 1px solid #ccc;
+                        }
+
+                        /* ── Corps facture ── */
+                        .sobto-title-box {
+                            background-color: #4472C4;
+                            color: white;
+                            padding: 8px 20px;
+                            text-align: center;
+                            font-weight: bold;
+                            font-size: 14px;
+                            margin: 12px 0;
+                            letter-spacing: 1px;
+                        }
+                        .sobto-objet-box {
+                            background-color: #4472C4;
+                            color: white;
+                            padding: 8px 20px;
+                            text-align: center;
+                            font-weight: bold;
+                            font-size: 12px;
+                            margin: 12px 0;
+                            letter-spacing: 1px;
+                        }
+                        .sobto-table { border: 1px solid #999; width: 100%; border-collapse: collapse; font-size: 10px; }
+                        .sobto-table th, .sobto-table td { border: 1px solid #999; padding: 5px 6px; }
+                        .sobto-table th { text-align: center; font-weight: bold; background-color: #f2f2f2; }
+                        .sobto-montant-ttc { color: #CC0000; font-weight: bold; }
+                        .sobto-client { margin-bottom: 12px; font-size: 11px; }
+                        .sobto-client .client-indent { margin-left: 60px; }
+                    </style>
+
+                    <!-- EN-TETE FIXE (repete sur chaque page) -->
+                    <div class="sobto-header">
+                        <div>
+                            <img t-if="o.company_id.logo"
+                                 t-attf-src="data:image/png;base64,#{o.company_id.logo.decode('utf-8') if isinstance(o.company_id.logo, bytes) else o.company_id.logo}"/>
+                        </div>
+                        <div class="header-right">
+                            <strong t-out="o.company_id.name"/>
+                            <span t-if="o.company_id.partner_id.street" t-out="o.company_id.partner_id.street"/>
+                        </div>
+                    </div>
+
+                    <!-- PIED DE PAGE FIXE (repete sur chaque page) -->
+                    <div class="sobto-footer">
+                        <div class="sobto-footer-border"></div>
+                        <div class="sobto-footer-content">
+                            <strong t-out="o.company_id.name"/>
+                            <br/>
+                            <span t-out="o.company_id.partner_id.street or o.company_id.street or ''"/>
+                            <t t-if="o.company_id.phone">, Tel : <span t-out="o.company_id.phone"/></t>
+                            <t t-if="o.company_id.partner_id.x_rccm">, RCCM N&#176; <span t-out="o.company_id.partner_id.x_rccm"/></t>
+                            <t t-if="o.company_id.partner_id.x_ifu">, IFU N&#176; <span t-out="o.company_id.partner_id.x_ifu"/></t>
+                            <t t-if="o.company_id.partner_id.bank_ids">
+                                <br/>
+                                <t t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
+                                    CPTE <t t-out="bank.bank_id.name or ''"/> N&#176;<t t-out="bank.acc_number or ''"/>
+                                    <t t-if="bank.acc_holder_name"> INTITULE <t t-out="bank.acc_holder_name"/></t>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- CONTENU DE LA FACTURE -->
+                    <div class="sobto-content">
+
+                        <!-- 1. Ville et date -->
                         <div style="text-align:right; margin-bottom:10px; font-size:11px;">
                             <span t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
                             <span t-out="o.x_invoice_date_fr"/>
@@ -70,7 +141,7 @@
 
                         <!-- 3. DOIT : Client -->
                         <div class="sobto-client">
-                            <span class="client-name">DOIT : <t t-out="o.partner_id.name"/></span>
+                            <strong>DOIT : <t t-out="o.partner_id.name"/></strong>
                             <div class="client-indent">
                                 <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
                                 <t t-if="o.partner_id.x_rccm"><div>N&#176; RCCM: <t t-out="o.partner_id.x_rccm"/></div></t>
@@ -85,7 +156,7 @@
                             OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
                         </div>
 
-                        <!-- 5. Tableau des lignes + totaux -->
+                        <!-- 5. Tableau -->
                         <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
                         <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
 
@@ -106,30 +177,20 @@
                                 <t t-foreach="product_lines" t-as="line">
                                     <tr>
                                         <td style="text-align:center;vertical-align:middle;">
-                                            <t t-if="line.x_date_bl">
-                                                <t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/>
-                                            </t>
+                                            <t t-if="line.x_date_bl"><t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/></t>
                                             <t t-out="line.x_numero_bl or ''"/>
                                         </td>
                                         <td style="text-align:center;vertical-align:middle;">
-                                            <t t-if="line.x_date_be">
-                                                <t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/>
-                                            </t>
+                                            <t t-if="line.x_date_be"><t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/></t>
                                             <t t-out="line.x_numero_be or ''"/>
                                         </td>
-                                        <td style="text-align:center;vertical-align:middle;">
-                                            <t t-out="line.x_numero_camion or ''"/>
-                                        </td>
+                                        <td style="text-align:center;vertical-align:middle;"><t t-out="line.x_numero_camion or ''"/></td>
                                         <td style="text-align:center;vertical-align:middle;">
                                             <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/>
                                             <t t-if="line.product_uom_id">&#160;<t t-out="line.product_uom_id.name"/></t>
                                         </td>
-                                        <td style="text-align:center;vertical-align:middle;">
-                                            <t t-out="line.product_id.name or line.name or ''"/>
-                                        </td>
-                                        <td style="text-align:center;vertical-align:middle;">
-                                            <t t-out="line.x_parcours or ''"/>
-                                        </td>
+                                        <td style="text-align:center;vertical-align:middle;"><t t-out="line.product_id.name or line.name or ''"/></td>
+                                        <td style="text-align:center;vertical-align:middle;"><t t-out="line.x_parcours or ''"/></td>
                                         <td style="text-align:right;vertical-align:middle;">
                                             <t t-out="('{:.3f}'.format(line.price_unit)).rstrip('0').rstrip('.').replace('.', ',')"/>
                                         </td>
@@ -142,25 +203,17 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="7" style="text-align:right;font-weight:bold;">MONTANT HT</td>
-                                    <td style="text-align:right;font-weight:bold;">
-                                        <t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/>
-                                    </td>
+                                    <td style="text-align:right;font-weight:bold;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
                                 </tr>
                                 <t t-foreach="tax_lines" t-as="tl">
                                     <tr>
-                                        <td colspan="7" style="text-align:right;">
-                                            <t t-out="tl.name"/>
-                                        </td>
-                                        <td style="text-align:right;">
-                                            <t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/>
-                                        </td>
+                                        <td colspan="7" style="text-align:right;"><t t-out="tl.name"/></td>
+                                        <td style="text-align:right;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
                                     </tr>
                                 </t>
                                 <tr>
                                     <td colspan="7" style="text-align:right;font-weight:bold;">MONTANT TTC</td>
-                                    <td class="sobto-montant-ttc" style="text-align:right;">
-                                        <t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/>
-                                    </td>
+                                    <td class="sobto-montant-ttc" style="text-align:right;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -176,28 +229,8 @@
                             Directeur G&#233;n&#233;ral
                         </div>
 
-                        <!-- 8. Pied de page societe -->
-                        <div class="sobto-page-footer">
-                            <div class="sobto-footer-border"></div>
-                            <div class="sobto-footer-content">
-                                <strong t-out="o.company_id.name"/>
-                                <br/>
-                                <span t-out="o.company_id.partner_id.street or o.company_id.street or &apos;&apos;"/>
-                                <t t-if="o.company_id.phone">, Tel : <span t-out="o.company_id.phone"/></t>
-                                <t t-if="o.company_id.partner_id.x_rccm">, RCCM N&#176; <span t-out="o.company_id.partner_id.x_rccm"/></t>
-                                <t t-if="o.company_id.partner_id.x_ifu">, IFU N&#176; <span t-out="o.company_id.partner_id.x_ifu"/></t>
-                                <t t-if="o.company_id.partner_id.bank_ids">
-                                    <br/>
-                                    <t t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
-                                        CPTE <t t-out="bank.bank_id.name or &apos;&apos;"/> N&#176;<t t-out="bank.acc_number or &apos;&apos;"/>
-                                        <t t-if="bank.acc_holder_name"> INTITULE <t t-out="bank.acc_holder_name"/></t>
-                                    </t>
-                                </t>
-                            </div>
-                        </div>
-
-                    </div>
-                </t>
+                    </div><!-- fin .sobto-content -->
+                </div><!-- fin .article -->
             </t>
         </t>
     </template>
@@ -212,4 +245,3 @@
     </template>
 
 </odoo>
-
