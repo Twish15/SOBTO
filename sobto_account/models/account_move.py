@@ -6,10 +6,20 @@ try:
 except ImportError:
     num2words = None
 
+MOIS_FR = [
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+]
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
+    x_invoice_date_fr = fields.Char(
+        string='Date (FR)',
+        compute='_compute_invoice_date_fr',
+        help='Date de facture formatée en français',
+    )
     x_objet = fields.Char(
         string='Objet',
         help='Objet de la facture (ex: TRANSPORT D\'HYDROCARBURES)',
@@ -20,6 +30,15 @@ class AccountMove(models.Model):
         store=True,
         help='Montant HT exprimé en toutes lettres (FCFA)',
     )
+
+    @api.depends('invoice_date')
+    def _compute_invoice_date_fr(self):
+        for move in self:
+            if move.invoice_date:
+                d = move.invoice_date
+                move.x_invoice_date_fr = f"{d.day:02d} {MOIS_FR[d.month - 1]} {d.year}"
+            else:
+                move.x_invoice_date_fr = ''
 
     @api.depends('amount_untaxed', 'currency_id')
     def _compute_montant_lettres(self):
