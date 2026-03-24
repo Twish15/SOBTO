@@ -159,4 +159,14 @@
             </t>
         </t>
     </template>
+
+    <!-- Integration dans le mecanisme standard account.report_invoice -->
+    <template id="report_invoice_inherit_sobto" inherit_id="account.report_invoice">
+        <xpath expr="//t[@t-if]" position="after">
+            <t t-elif="o._get_name_invoice_report() == 'sobto_account.report_invoice_sobto'"
+               t-call="sobto_account.report_invoice_sobto"
+               t-lang="lang"/>
+        </xpath>
+    </template>
+
 </odoo>

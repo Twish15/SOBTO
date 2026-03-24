@@ -56,6 +56,12 @@ class AccountMove(models.Model):
             else:
                 move.x_montant_lettres = ''
 
+    def _get_name_invoice_report(self):
+        """Utilise le template SOBTO pour les factures et avoirs clients."""
+        if self.move_type in ('out_invoice', 'out_refund'):
+            return 'sobto_account.report_invoice_sobto'
+        return super()._get_name_invoice_report()
+
     def action_post(self):
         for move in self:
             if move.move_type in ('out_invoice', 'out_refund') and move.partner_id:

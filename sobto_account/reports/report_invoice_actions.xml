@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Rediriger les rapports facture Odoo vers notre template SOBTO -->
-    <record id="account.report_invoice" model="ir.actions.report">
-        <field name="report_name">sobto_account.report_invoice_sobto</field>
-    </record>
+    <!-- Le rapport SOBTO est active via _get_name_invoice_report() dans account_move.py
+         et l'heritage du template account.report_invoice dans report_invoice_sobto.xml -->
 </odoo>
