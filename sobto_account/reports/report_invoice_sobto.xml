@@ -6,12 +6,12 @@
                 <div class="article">
                     <style>
                         @page {
-                            margin-top:   130px;
-                            margin-bottom: 90px;
+                            margin-top:    130px;
+                            margin-bottom: 130px;
                             margin-left:   25px;
                             margin-right:  25px;
                         }
-                        body { font-family: Arial, sans-serif; font-size: 11px; color: #000; }
+                        body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; }
 
                         /* ── EN-TETE FIXE ── */
                         .sobto-header {
@@ -22,43 +22,44 @@
                             display: flex;
                             align-items: center;
                             justify-content: space-between;
-                            padding: 6px 25px 6px 25px;
+                            padding: 6px 25px;
                             border-bottom: 2px solid #4472C4;
                             background: white;
                         }
                         .sobto-header img { max-height: 90px; max-width: 160px; }
-                        .sobto-header .header-date {
-                            text-align: right;
-                            font-size: 11px;
-                            color: #333;
-                        }
+                        .sobto-header .header-date { text-align: right; font-size: 11px; color: #333; }
 
                         /* ── PIED DE PAGE FIXE ── */
                         .sobto-footer {
                             position: fixed;
-                            bottom: -88px;
+                            bottom: -128px;
                             left: 0; right: 0;
-                            height: 82px;
+                            overflow: hidden;
+                            min-height: 120px;
                         }
-                        .sobto-footer-deco {
-                            height: 12px;
-                            background: linear-gradient(135deg,
-                                #7FAADC 0%, #7FAADC 20%,
-                                #4472C4 20%, #4472C4 40%,
-                                #7FAADC 40%, #7FAADC 60%,
-                                #4472C4 60%, #4472C4 80%,
-                                #7FAADC 80%, #7FAADC 100%
-                            );
+                        .footer-bg {
+                            position: absolute;
+                            top: 0; left: 0; right: 0; bottom: 0;
+                            z-index: 0;
                         }
-                        .sobto-footer-body {
-                            background: #1F3864;
-                            color: white;
+                        .footer-bg svg { width: 100%; height: 100%; display: block; }
+                        .footer-content {
+                            position: relative;
+                            z-index: 1;
+                            padding: 14px 20px;
                             text-align: center;
-                            font-size: 7pt;
-                            padding: 4px 10px 3px 10px;
+                            color: #ffffff;
+                            font-size: 9px;
+                            line-height: 1.6;
                         }
-                        .sobto-footer-body strong { color: white; font-size: 8pt; }
-                        .sobto-footer-body span   { color: white; }
+                        .footer-company-name {
+                            font-weight: bold;
+                            font-size: 11px;
+                            letter-spacing: 0.5px;
+                            margin-bottom: 4px;
+                            text-transform: uppercase;
+                        }
+                        .footer-details { line-height: 1.5; color: #ffffff; }
 
                         /* ── CORPS FACTURE ── */
                         .sobto-title-box {
@@ -82,7 +83,7 @@
                             letter-spacing: 1px;
                         }
                         .sobto-table { border: 1px solid #555; width: 100%; border-collapse: collapse; font-size: 10px; }
-                        .sobto-table th, .sobto-table td { border: 1px solid #555; padding: 5px 5px; }
+                        .sobto-table th, .sobto-table td { border: 1px solid #555; padding: 5px; }
                         .sobto-table th { text-align: center; font-weight: bold; background-color: #f0f0f0; }
                         .sobto-montant-ttc { color: #CC0000; font-weight: bold; }
                         .sobto-client { margin-bottom: 10px; font-size: 11px; }
@@ -101,33 +102,46 @@
 
                     <!-- PIED DE PAGE (fixe sur chaque page) -->
                     <div class="sobto-footer">
-                        <div class="sobto-footer-deco"></div>
-                        <div class="sobto-footer-body">
-                            <strong t-out="o.company_id.name"/>
-                            <br/>
-                            <span t-out="o.company_id.partner_id.street or o.company_id.street or ''"/>
-                            <t t-if="o.company_id.phone"><span>, Tel : <t t-out="o.company_id.phone"/></span></t>
-                            <t t-if="o.company_id.partner_id.x_rccm"><span>, RCCM N&#176; <t t-out="o.company_id.partner_id.x_rccm"/></span></t>
-                            <t t-if="o.company_id.partner_id.x_ifu"><span>, IFU N&#176; <t t-out="o.company_id.partner_id.x_ifu"/></span></t>
-                            <t t-if="o.company_id.partner_id.bank_ids">
-                                <br/>
-                                <t t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
-                                    <span>CPTE <t t-out="bank.bank_id.name or ''"/> N&#176;<t t-out="bank.acc_number or ''"/></span>
-                                    <t t-if="bank.acc_holder_name"><span> INTITULE <t t-out="bank.acc_holder_name"/></span></t>
+                        <div class="footer-bg">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="ibtcWaveGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#5a9fb8"/>
+                                        <stop offset="50%" style="stop-color:#6b9eb5"/>
+                                        <stop offset="100%" style="stop-color:#7eb5ce"/>
+                                    </linearGradient>
+                                </defs>
+                                <rect width="1440" height="120" fill="url(#ibtcWaveGrad)"/>
+                                <path fill="rgba(255,255,255,0.12)" d="M0,120 C240,80 480,60 720,75 T1440,55 L1440,120 L0,120 Z"/>
+                                <path fill="rgba(255,255,255,0.2)"  d="M0,100 C360,70 720,50 1080,65 T1440,45 L1440,120 L0,120 Z"/>
+                                <path fill="rgba(255,255,255,0.15)" d="M0,85  C300,55 600,40 900,55  T1440,35 L1440,120 L0,120 Z"/>
+                            </svg>
+                        </div>
+                        <div class="footer-content">
+                            <div class="footer-company-name">
+                                <t t-out="o.company_id.name"/>
+                            </div>
+                            <div class="footer-details">
+                                <span t-out="o.company_id.partner_id.street or o.company_id.street or ''"/>
+                                <t t-if="o.company_id.phone">, Tel: <span t-out="o.company_id.phone"/></t>
+                                <t t-if="o.company_id.partner_id.x_rccm">, RCCM N&#176; <span t-out="o.company_id.partner_id.x_rccm"/></t>
+                                <t t-if="o.company_id.partner_id.x_ifu">, IFU N&#176; <span t-out="o.company_id.partner_id.x_ifu"/></t>
+                                <t t-if="o.company_id.partner_id.bank_ids">
+                                    <br/>
+                                    <t t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
+                                        CPTE <t t-out="bank.bank_id.name or ''"/> N&#176;<t t-out="bank.acc_number or ''"/>
+                                        <t t-if="bank.acc_holder_name"> INTITULE <t t-out="bank.acc_holder_name"/></t>
+                                    </t>
                                 </t>
-                            </t>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- CONTENU DE LA FACTURE -->
+                    <!-- CONTENU -->
                     <div class="sobto-content">
 
-                        <!-- Titre FACTURE -->
-                        <div class="sobto-title-box">
-                            FACTURE <span t-out="o.name"/>
-                        </div>
+                        <div class="sobto-title-box">FACTURE <span t-out="o.name"/></div>
 
-                        <!-- DOIT : Client -->
                         <div class="sobto-client">
                             <strong>DOIT : <t t-out="o.partner_id.name"/></strong>
                             <div class="client-indent">
@@ -139,12 +153,10 @@
                             </div>
                         </div>
 
-                        <!-- OBJET -->
                         <div t-if="o.x_objet" class="sobto-objet-box">
                             OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
                         </div>
 
-                        <!-- Tableau lignes + totaux -->
                         <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
                         <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
 
@@ -206,27 +218,24 @@
                             </tfoot>
                         </table>
 
-                        <!-- Montant en lettres -->
                         <div t-if="o.x_montant_lettres" style="margin-top:12px;font-size:11px;">
                             Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
                             <strong t-out="o.x_montant_lettres"/>
                         </div>
 
-                        <!-- Signature -->
                         <div style="text-align:right; margin-top:35px;">
-                            <div style="font-weight:bold; font-size:11px;">Directeur G&#233;n&#233;ral</div>
-                            <div t-if="o.x_signataire" style="margin-top:10px; font-weight:bold; font-size:11px;">
+                            <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
+                            <div t-if="o.x_signataire" style="margin-top:10px; font-weight:bold;">
                                 <t t-out="o.x_signataire"/>
                             </div>
                         </div>
 
-                    </div><!-- fin .sobto-content -->
-                </div><!-- fin .article -->
+                    </div>
+                </div>
             </t>
         </t>
     </template>
 
-    <!-- Integration dans le mecanisme standard account.report_invoice -->
     <template id="report_invoice_inherit_sobto" inherit_id="account.report_invoice">
         <xpath expr="//t[@t-if]" position="after">
             <t t-elif="o._get_name_invoice_report() == 'sobto_account.report_invoice_sobto'"
