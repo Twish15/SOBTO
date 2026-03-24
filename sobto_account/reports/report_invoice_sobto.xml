@@ -4,33 +4,38 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
 
-                <!-- ══ EN-TETE ══ -->
+                <!-- ══ EN-TETE : logo a droite ══ -->
                 <div class="header">
-                    <table style="width:100%;border-collapse:collapse;border-bottom:2px solid #4472C4;padding:6px 25px;">
+                    <table style="width:100%;border-collapse:collapse;border-bottom:3px solid #4472C4;padding:8px 25px;background-color:#ffffff;">
                         <tr>
                             <td style="vertical-align:middle;padding-left:10px;">
-                                <img t-if="o.company_id.logo"
-                                     style="max-height:85px;max-width:150px;"
-                                     t-attf-src="data:image/png;base64,#{o.company_id.logo.decode('utf-8') if isinstance(o.company_id.logo, bytes) else o.company_id.logo}"/>
+                                <!-- Cote gauche vide -->
                             </td>
-                            <td style="text-align:right;vertical-align:middle;padding-right:10px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#333;">
-                                <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
-                                <t t-out="o.x_invoice_date_fr"/>
+                            <td style="text-align:right;vertical-align:middle;padding-right:10px;">
+                                <img t-if="o.company_id.logo"
+                                     style="max-height:90px;max-width:160px;"
+                                     t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
                             </td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- ══ CONTENU ══ -->
-                <div class="article" style="margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#000;">
+                <div class="article" style="margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;">
+
+                    <!-- Ville et date : premier element apres le header -->
+                    <div style="text-align:right;margin-bottom:10px;margin-top:8px;font-size:12px;color:#333;font-family:Arial,Helvetica,sans-serif;">
+                        <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
+                        <t t-out="o.x_invoice_date_fr"/>
+                    </div>
 
                     <!-- Titre -->
-                    <div style="background-color:#4472C4;color:white;padding:7px 20px;text-align:center;font-weight:bold;font-size:13px;margin:10px 0;letter-spacing:1px;">
+                    <div style="background-color:#4472C4;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
                         FACTURE <span t-out="o.name"/>
                     </div>
 
                     <!-- DOIT -->
-                    <div style="margin-bottom:10px;font-size:11px;">
+                    <div style="margin-bottom:10px;font-size:12px;">
                         <strong>DOIT : <t t-out="o.partner_id.name"/></strong>
                         <div style="margin-left:55px;">
                             <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
@@ -42,7 +47,7 @@
                     </div>
 
                     <!-- Objet -->
-                    <div t-if="o.x_objet" style="background-color:#4472C4;color:white;padding:7px 20px;text-align:center;font-weight:bold;font-size:11px;margin:10px 0;letter-spacing:1px;">
+                    <div t-if="o.x_objet" style="background-color:#4472C4;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
                         OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
                     </div>
 
@@ -50,7 +55,7 @@
                     <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
                     <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
 
-                    <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:10px;">
+                    <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:11px;">
                         <thead>
                             <tr>
                                 <th style="border:1px solid #555;padding:5px;text-align:center;font-weight:bold;background-color:#f0f0f0;width:12%;">Date et N&#176;<br/>de B.L</th>
@@ -109,7 +114,7 @@
                     </table>
 
                     <!-- Montant lettres -->
-                    <div t-if="o.x_montant_lettres" style="margin-top:12px;font-size:11px;font-family:Arial,Helvetica,sans-serif;">
+                    <div t-if="o.x_montant_lettres" style="margin-top:12px;font-size:12px;font-family:Arial,Helvetica,sans-serif;">
                         Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
                         <strong t-out="o.x_montant_lettres"/>
                     </div>
