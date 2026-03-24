@@ -3,105 +3,166 @@
     <template id="report_invoice_sobto">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
+                <style>
+                    body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; margin: 0; }
+
+                    /* EN-TETE */
+                    .sobto-header-table { width: 100%; border-collapse: collapse; border-bottom: 2px solid #4472C4; padding: 6px 25px; }
+                    .sobto-header-table img { max-height: 85px; max-width: 150px; }
+                    .header-date { text-align: right; font-size: 11px; color: #333; vertical-align: middle; padding-right: 10px; }
+
+                    /* CORPS */
+                    .article { margin: 0 25px; }
+                    .sobto-title-box {
+                        background-color: #4472C4; color: white;
+                        padding: 7px 20px; text-align: center;
+                        font-weight: bold; font-size: 13px;
+                        margin: 10px 0; letter-spacing: 1px;
+                    }
+                    .sobto-objet-box {
+                        background-color: #4472C4; color: white;
+                        padding: 7px 20px; text-align: center;
+                        font-weight: bold; font-size: 11px;
+                        margin: 10px 0; letter-spacing: 1px;
+                    }
+                    .sobto-table { border: 1px solid #555; width: 100%; border-collapse: collapse; font-size: 10px; }
+                    .sobto-table th, .sobto-table td { border: 1px solid #555; padding: 5px; }
+                    .sobto-table th { text-align: center; font-weight: bold; background-color: #f0f0f0; }
+                    .sobto-montant-ttc { color: #CC0000; font-weight: bold; }
+                    .sobto-client { margin-bottom: 10px; font-size: 11px; }
+                    .sobto-client .client-indent { margin-left: 55px; }
+
+                    /* FOOTER SVG */
+                    .footer-wrapper { position: relative; overflow: hidden; min-height: 120px; }
+                    .footer-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; }
+                    .footer-bg svg { width: 100%; height: 100%; display: block; }
+                    .footer-content {
+                        position: relative; z-index: 1;
+                        padding: 14px 20px; text-align: center;
+                        color: #ffffff; font-size: 9px; line-height: 1.6;
+                    }
+                    .footer-company-name {
+                        font-weight: bold; font-size: 11px;
+                        letter-spacing: 0.5px; margin-bottom: 4px;
+                        text-transform: uppercase; color: #fff;
+                    }
+                    .footer-details { line-height: 1.5; color: #ffffff; }
+                </style>
+
+                <!-- ═══ EN-TETE (repete sur chaque page par Odoo) ═══ -->
+                <div class="header">
+                    <table class="sobto-header-table">
+                        <tr>
+                            <td style="padding-left:10px; vertical-align:middle;">
+                                <img t-if="o.company_id.logo"
+                                     t-attf-src="data:image/png;base64,#{o.company_id.logo.decode('utf-8') if isinstance(o.company_id.logo, bytes) else o.company_id.logo}"/>
+                            </td>
+                            <td class="header-date">
+                                <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
+                                <t t-out="o.x_invoice_date_fr"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ═══ CONTENU FACTURE ═══ -->
                 <div class="article">
-                    <style>
-                        @page {
-                            margin-top:    130px;
-                            margin-bottom: 0;
-                            margin-left:   25px;
-                            margin-right:  25px;
-                        }
-                        body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; }
 
-                        /* ── EN-TETE FIXE ── */
-                        .sobto-header {
-                            position: fixed;
-                            top: -120px;
-                            left: 0; right: 0;
-                            height: 110px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            padding: 6px 25px;
-                            border-bottom: 2px solid #4472C4;
-                            background: white;
-                        }
-                        .sobto-header img { max-height: 90px; max-width: 160px; }
-                        .sobto-header .header-date { text-align: right; font-size: 11px; color: #333; }
+                    <div class="sobto-title-box">FACTURE <span t-out="o.name"/></div>
 
-                        /* ── PIED DE PAGE FIXE ── */
-                        .sobto-footer {
-                            position: fixed;
-                            bottom: 0;
-                            left: 0; right: 0;
-                            overflow: hidden;
-                            min-height: 120px;
-                        }
-                        .footer-bg {
-                            position: absolute;
-                            top: 0; left: 0; right: 0; bottom: 0;
-                            z-index: 0;
-                        }
-                        .footer-bg svg { width: 100%; height: 100%; display: block; }
-                        .footer-content {
-                            position: relative;
-                            z-index: 1;
-                            padding: 14px 20px;
-                            text-align: center;
-                            color: #ffffff;
-                            font-size: 9px;
-                            line-height: 1.6;
-                        }
-                        .footer-company-name {
-                            font-weight: bold;
-                            font-size: 11px;
-                            letter-spacing: 0.5px;
-                            margin-bottom: 4px;
-                            text-transform: uppercase;
-                        }
-                        .footer-details { line-height: 1.5; color: #ffffff; }
-
-                        /* ── CORPS FACTURE ── */
-                        .sobto-title-box {
-                            background-color: #4472C4;
-                            color: white;
-                            padding: 7px 20px;
-                            text-align: center;
-                            font-weight: bold;
-                            font-size: 13px;
-                            margin: 10px 0;
-                            letter-spacing: 1px;
-                        }
-                        .sobto-objet-box {
-                            background-color: #4472C4;
-                            color: white;
-                            padding: 7px 20px;
-                            text-align: center;
-                            font-weight: bold;
-                            font-size: 11px;
-                            margin: 10px 0;
-                            letter-spacing: 1px;
-                        }
-                        .sobto-table { border: 1px solid #555; width: 100%; border-collapse: collapse; font-size: 10px; }
-                        .sobto-table th, .sobto-table td { border: 1px solid #555; padding: 5px; }
-                        .sobto-table th { text-align: center; font-weight: bold; background-color: #f0f0f0; }
-                        .sobto-montant-ttc { color: #CC0000; font-weight: bold; }
-                        .sobto-client { margin-bottom: 10px; font-size: 11px; }
-                        .sobto-client .client-indent { margin-left: 55px; }
-                    </style>
-
-                    <!-- EN-TETE (fixe sur chaque page) -->
-                    <div class="sobto-header">
-                        <img t-if="o.company_id.logo"
-                             t-attf-src="data:image/png;base64,#{o.company_id.logo.decode('utf-8') if isinstance(o.company_id.logo, bytes) else o.company_id.logo}"/>
-                        <div class="header-date">
-                            <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
-                            <t t-out="o.x_invoice_date_fr"/>
+                    <div class="sobto-client">
+                        <strong>DOIT : <t t-out="o.partner_id.name"/></strong>
+                        <div class="client-indent">
+                            <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
+                            <t t-if="o.partner_id.x_rccm"><div>N&#176; RCCM: <t t-out="o.partner_id.x_rccm"/></div></t>
+                            <t t-if="o.partner_id.x_ifu"><div>N&#176; IFU : <t t-out="o.partner_id.x_ifu"/></div></t>
+                            <t t-if="o.partner_id.phone"><div>TEL : <t t-out="o.partner_id.phone"/></div></t>
+                            <t t-if="o.partner_id.x_dge_rni"><div t-out="o.partner_id.x_dge_rni"/></t>
                         </div>
                     </div>
 
-                    <!-- PIED DE PAGE (fixe sur chaque page) -->
-                    <div class="sobto-footer">
+                    <div t-if="o.x_objet" class="sobto-objet-box">
+                        OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
+                    </div>
+
+                    <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
+                    <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
+
+                    <table class="sobto-table">
+                        <thead>
+                            <tr>
+                                <th style="width:12%;">Date et N&#176;<br/>de B.L</th>
+                                <th style="width:12%;">Date et N&#176;<br/>de B.E</th>
+                                <th style="width:14%;">N&#176; Camion</th>
+                                <th style="width:11%;">Quantit&#233;s</th>
+                                <th style="width:8%;">Produit</th>
+                                <th style="width:18%;">Parcours</th>
+                                <th style="width:9%;text-align:right;">Taux</th>
+                                <th style="width:11%;text-align:right;">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="product_lines" t-as="line">
+                                <tr>
+                                    <td style="text-align:center;vertical-align:middle;">
+                                        <t t-if="line.x_date_bl"><t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/></t>
+                                        <t t-out="line.x_numero_bl or ''"/>
+                                    </td>
+                                    <td style="text-align:center;vertical-align:middle;">
+                                        <t t-if="line.x_date_be"><t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/></t>
+                                        <t t-out="line.x_numero_be or ''"/>
+                                    </td>
+                                    <td style="text-align:center;vertical-align:middle;"><t t-out="line.x_numero_camion or ''"/></td>
+                                    <td style="text-align:center;vertical-align:middle;">
+                                        <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/>
+                                        <t t-if="line.product_uom_id">&#160;<t t-out="line.product_uom_id.name"/></t>
+                                    </td>
+                                    <td style="text-align:center;vertical-align:middle;"><t t-out="line.product_id.name or line.name or ''"/></td>
+                                    <td style="text-align:center;vertical-align:middle;"><t t-out="line.x_parcours or ''"/></td>
+                                    <td style="text-align:right;vertical-align:middle;">
+                                        <t t-out="('{:.3f}'.format(line.price_unit)).rstrip('0').rstrip('.').replace('.', ',')"/>
+                                    </td>
+                                    <td style="text-align:right;vertical-align:middle;">
+                                        <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7" style="text-align:right;font-weight:bold;background:#f0f0f0;">MONTANT HT</td>
+                                <td style="text-align:right;font-weight:bold;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
+                            </tr>
+                            <t t-foreach="tax_lines" t-as="tl">
+                                <tr>
+                                    <td colspan="7" style="text-align:right;"><t t-out="tl.name"/></td>
+                                    <td style="text-align:right;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
+                                </tr>
+                            </t>
+                            <tr>
+                                <td colspan="7" style="text-align:right;font-weight:bold;background:#f0f0f0;">MONTANT TTC</td>
+                                <td class="sobto-montant-ttc" style="text-align:right;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div t-if="o.x_montant_lettres" style="margin-top:12px;font-size:11px;">
+                        Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
+                        <strong t-out="o.x_montant_lettres"/>
+                    </div>
+
+                    <div style="text-align:right; margin-top:35px;">
+                        <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
+                        <div t-if="o.x_signataire" style="margin-top:10px; font-weight:bold;">
+                            <t t-out="o.x_signataire"/>
+                        </div>
+                    </div>
+
+                </div><!-- fin .article -->
+
+                <!-- ═══ PIED DE PAGE SVG (repete sur chaque page par Odoo) ═══ -->
+                <div class="footer">
+                    <div class="footer-wrapper">
                         <div class="footer-bg">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
                                 <defs>
@@ -118,9 +179,7 @@
                             </svg>
                         </div>
                         <div class="footer-content">
-                            <div class="footer-company-name">
-                                <t t-out="o.company_id.name"/>
-                            </div>
+                            <div class="footer-company-name"><t t-out="o.company_id.name"/></div>
                             <div class="footer-details">
                                 <span t-out="o.company_id.partner_id.street or o.company_id.street or ''"/>
                                 <t t-if="o.company_id.phone">, Tel: <span t-out="o.company_id.phone"/></t>
@@ -136,102 +195,8 @@
                             </div>
                         </div>
                     </div>
+                </div><!-- fin .footer -->
 
-                    <!-- CONTENU -->
-                    <div class="sobto-content" style="padding-bottom: 130px;">
-
-                        <div class="sobto-title-box">FACTURE <span t-out="o.name"/></div>
-
-                        <div class="sobto-client">
-                            <strong>DOIT : <t t-out="o.partner_id.name"/></strong>
-                            <div class="client-indent">
-                                <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
-                                <t t-if="o.partner_id.x_rccm"><div>N&#176; RCCM: <t t-out="o.partner_id.x_rccm"/></div></t>
-                                <t t-if="o.partner_id.x_ifu"><div>N&#176; IFU : <t t-out="o.partner_id.x_ifu"/></div></t>
-                                <t t-if="o.partner_id.phone"><div>TEL : <t t-out="o.partner_id.phone"/></div></t>
-                                <t t-if="o.partner_id.x_dge_rni"><div t-out="o.partner_id.x_dge_rni"/></t>
-                            </div>
-                        </div>
-
-                        <div t-if="o.x_objet" class="sobto-objet-box">
-                            OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
-                        </div>
-
-                        <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
-                        <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
-
-                        <table class="sobto-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:12%;">Date et N&#176;<br/>de B.L</th>
-                                    <th style="width:12%;">Date et N&#176;<br/>de B.E</th>
-                                    <th style="width:14%;">N&#176; Camion</th>
-                                    <th style="width:11%;">Quantit&#233;s</th>
-                                    <th style="width:8%;">Produit</th>
-                                    <th style="width:18%;">Parcours</th>
-                                    <th style="width:9%;text-align:right;">Taux</th>
-                                    <th style="width:11%;text-align:right;">Montant</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-foreach="product_lines" t-as="line">
-                                    <tr>
-                                        <td style="text-align:center;vertical-align:middle;">
-                                            <t t-if="line.x_date_bl"><t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/></t>
-                                            <t t-out="line.x_numero_bl or ''"/>
-                                        </td>
-                                        <td style="text-align:center;vertical-align:middle;">
-                                            <t t-if="line.x_date_be"><t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/></t>
-                                            <t t-out="line.x_numero_be or ''"/>
-                                        </td>
-                                        <td style="text-align:center;vertical-align:middle;"><t t-out="line.x_numero_camion or ''"/></td>
-                                        <td style="text-align:center;vertical-align:middle;">
-                                            <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/>
-                                            <t t-if="line.product_uom_id">&#160;<t t-out="line.product_uom_id.name"/></t>
-                                        </td>
-                                        <td style="text-align:center;vertical-align:middle;"><t t-out="line.product_id.name or line.name or ''"/></td>
-                                        <td style="text-align:center;vertical-align:middle;"><t t-out="line.x_parcours or ''"/></td>
-                                        <td style="text-align:right;vertical-align:middle;">
-                                            <t t-out="('{:.3f}'.format(line.price_unit)).rstrip('0').rstrip('.').replace('.', ',')"/>
-                                        </td>
-                                        <td style="text-align:right;vertical-align:middle;">
-                                            <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
-                                        </td>
-                                    </tr>
-                                </t>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="7" style="text-align:right;font-weight:bold;background:#f0f0f0;">MONTANT HT</td>
-                                    <td style="text-align:right;font-weight:bold;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
-                                </tr>
-                                <t t-foreach="tax_lines" t-as="tl">
-                                    <tr>
-                                        <td colspan="7" style="text-align:right;"><t t-out="tl.name"/></td>
-                                        <td style="text-align:right;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
-                                    </tr>
-                                </t>
-                                <tr>
-                                    <td colspan="7" style="text-align:right;font-weight:bold;background:#f0f0f0;">MONTANT TTC</td>
-                                    <td class="sobto-montant-ttc" style="text-align:right;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-
-                        <div t-if="o.x_montant_lettres" style="margin-top:12px;font-size:11px;">
-                            Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
-                            <strong t-out="o.x_montant_lettres"/>
-                        </div>
-
-                        <div style="text-align:right; margin-top:35px;">
-                            <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
-                            <div t-if="o.x_signataire" style="margin-top:10px; font-weight:bold;">
-                                <t t-out="o.x_signataire"/>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
             </t>
         </t>
     </template>
