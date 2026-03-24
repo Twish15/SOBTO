@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rediriger les rapports facture Odoo vers notre template SOBTO -->
+    <record id="account.report_invoice" model="ir.actions.report">
+        <field name="report_name">sobto_account.report_invoice_sobto</field>
+    </record>
+</odoo>

@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_sobto">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .sobto-title-box {
+                                background-color: #4472C4;
+                                color: white;
+                                padding: 8px 20px;
+                                text-align: center;
+                                font-weight: bold;
+                                font-size: 14px;
+                                margin: 12px 0;
+                                letter-spacing: 1px;
+                            }
+                            .sobto-objet-box {
+                                background-color: #4472C4;
+                                color: white;
+                                padding: 8px 20px;
+                                text-align: center;
+                                font-weight: bold;
+                                font-size: 12px;
+                                margin: 12px 0;
+                                letter-spacing: 1px;
+                            }
+                            .sobto-table { border: 1px solid #999; width: 100%; border-collapse: collapse; font-size: 10px; }
+                            .sobto-table th, .sobto-table td { border: 1px solid #999; padding: 5px 6px; }
+                            .sobto-table th { text-align: center; font-weight: bold; background-color: #f2f2f2; }
+                            .sobto-montant-ttc { color: #CC0000; font-weight: bold; }
+                            .sobto-client { margin-bottom: 12px; font-size: 11px; }
+                            .sobto-client .client-name { font-weight: bold; }
+                            .sobto-client .client-indent { margin-left: 60px; }
+                        </style>
+
+                        <!-- 1. Date et lieu -->
+                        <div style="text-align:right; margin-bottom:10px; font-size:11px;">
+                            <span t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
+                            <span t-out="o.x_invoice_date_fr"/>
+                        </div>
+
+                        <!-- 2. Titre FACTURE -->
+                        <div class="sobto-title-box">
+                            FACTURE <span t-out="o.name"/>
+                        </div>
+
+                        <!-- 3. DOIT : Client -->
+                        <div class="sobto-client">
+                            <span class="client-name">DOIT : <t t-out="o.partner_id.name"/></span>
+                            <div class="client-indent">
+                                <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
+                                <t t-if="o.partner_id.x_rccm"><div>N&#176; RCCM: <t t-out="o.partner_id.x_rccm"/></div></t>
+                                <t t-if="o.partner_id.x_ifu"><div>N&#176; IFU : <t t-out="o.partner_id.x_ifu"/></div></t>
+                                <t t-if="o.partner_id.phone"><div>TEL : <t t-out="o.partner_id.phone"/></div></t>
+                                <t t-if="o.partner_id.x_dge_rni"><div t-out="o.partner_id.x_dge_rni"/></t>
+                            </div>
+                        </div>
+
+                        <!-- 4. OBJET -->
+                        <div t-if="o.x_objet" class="sobto-objet-box">
+                            OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
+                        </div>
+
+                        <!-- 5. Tableau des lignes + totaux -->
+                        <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
+                        <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
+
+                        <table class="sobto-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:12%;">Date et N&#176;<br/>de B.L</th>
+                                    <th style="width:12%;">Date et N&#176;<br/>de B.E</th>
+                                    <th style="width:14%;">N&#176; Camion</th>
+                                    <th style="width:11%;">Quantit&#233;s</th>
+                                    <th style="width:8%;">Produit</th>
+                                    <th style="width:18%;">Parcours</th>
+                                    <th style="width:9%;text-align:right;">Taux</th>
+                                    <th style="width:11%;text-align:right;">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="product_lines" t-as="line">
+                                    <tr>
+                                        <td style="text-align:center;vertical-align:middle;">
+                                            <t t-if="line.x_date_bl">
+                                                <t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/>
+                                            </t>
+                                            <t t-out="line.x_numero_bl or ''"/>
+                                        </td>
+                                        <td style="text-align:center;vertical-align:middle;">
+                                            <t t-if="line.x_date_be">
+                                                <t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/>
+                                            </t>
+                                            <t t-out="line.x_numero_be or ''"/>
+                                        </td>
+                                        <td style="text-align:center;vertical-align:middle;">
+                                            <t t-out="line.x_numero_camion or ''"/>
+                                        </td>
+                                        <td style="text-align:center;vertical-align:middle;">
+                                            <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/>
+                                            <t t-if="line.product_uom_id">&#160;<t t-out="line.product_uom_id.name"/></t>
+                                        </td>
+                                        <td style="text-align:center;vertical-align:middle;">
+                                            <t t-out="line.product_id.name or line.name or ''"/>
+                                        </td>
+                                        <td style="text-align:center;vertical-align:middle;">
+                                            <t t-out="line.x_parcours or ''"/>
+                                        </td>
+                                        <td style="text-align:right;vertical-align:middle;">
+                                            <t t-out="('{:.3f}'.format(line.price_unit)).rstrip('0').rstrip('.').replace('.', ',')"/>
+                                        </td>
+                                        <td style="text-align:right;vertical-align:middle;">
+                                            <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7" style="text-align:right;font-weight:bold;">MONTANT HT</td>
+                                    <td style="text-align:right;font-weight:bold;">
+                                        <t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/>
+                                    </td>
+                                </tr>
+                                <t t-foreach="tax_lines" t-as="tl">
+                                    <tr>
+                                        <td colspan="7" style="text-align:right;">
+                                            <t t-out="tl.name"/>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td colspan="7" style="text-align:right;font-weight:bold;">MONTANT TTC</td>
+                                    <td class="sobto-montant-ttc" style="text-align:right;">
+                                        <t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- 6. Montant en lettres -->
+                        <div t-if="o.x_montant_lettres" style="margin-top:14px;font-size:11px;">
+                            Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
+                            <strong t-out="o.x_montant_lettres"/>
+                        </div>
+
+                        <!-- 7. Signature -->
+                        <div style="text-align:right;margin-top:40px;font-weight:bold;">
+                            Directeur G&#233;n&#233;ral
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
