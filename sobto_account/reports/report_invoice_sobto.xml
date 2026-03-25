@@ -14,21 +14,21 @@
                 </div>
 
                 <!-- ══ CONTENU ══ -->
-                <div class="article" style="margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;">
+                <div class="article" style="margin:0 25px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;font-size:13px;line-height:1.45;color:#000;">
 
                     <!-- Ville et date : premier element apres le header -->
-                    <div style="text-align:right;margin-bottom:8px;margin-top:0;padding-top:0;font-size:12px;color:#333;font-family:Arial,Helvetica,sans-serif;">
+                    <div style="text-align:right;margin-bottom:8px;margin-top:0;padding-top:0;font-size:13px;color:#333;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
                         <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
                         <t t-out="o.x_invoice_date_fr"/>
                     </div>
 
                     <!-- Titre -->
-                    <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
+                    <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
                         FACTURE <span t-out="o.name"/>
                     </div>
 
                     <!-- DOIT -->
-                    <div style="margin-bottom:10px;font-size:12px;">
+                    <div style="margin-bottom:10px;font-size:13px;">
                         <strong>DOIT : <t t-out="o.partner_id.name"/></strong>
                         <div style="margin-left:55px;">
                             <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
@@ -40,7 +40,7 @@
                     </div>
 
                     <!-- Objet -->
-                    <div t-if="o.x_objet" style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;">
+                    <div t-if="o.x_objet" style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
                         OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
                     </div>
 
@@ -48,74 +48,73 @@
                     <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
                     <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
 
-                    <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:11px;">
+                    <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;background-color:#ffffff;">
                         <thead>
                             <tr>
-                                <th style="border:1px solid #555;padding:5px;text-align:center;font-weight:bold;background-color:#f0f0f0;width:12%;">Date et N&#176;<br/>de B.L</th>
-                                <th style="border:1px solid #555;padding:5px;text-align:center;font-weight:bold;background-color:#f0f0f0;width:12%;">Date et N&#176;<br/>de B.E</th>
-                                <th style="border:1px solid #555;padding:5px;text-align:center;font-weight:bold;background-color:#f0f0f0;width:14%;">N&#176; Camion</th>
-                                <th style="border:1px solid #555;padding:5px;text-align:center;font-weight:bold;background-color:#f0f0f0;width:11%;">Quantit&#233;s</th>
-                                <th style="border:1px solid #555;padding:5px;text-align:center;font-weight:bold;background-color:#f0f0f0;width:8%;">Produit</th>
-                                <th style="border:1px solid #555;padding:5px;text-align:center;font-weight:bold;background-color:#f0f0f0;width:18%;">Parcours</th>
-                                <th style="border:1px solid #555;padding:5px;text-align:right;font-weight:bold;background-color:#f0f0f0;width:9%;">Taux</th>
-                                <th style="border:1px solid #555;padding:5px;text-align:right;font-weight:bold;background-color:#f0f0f0;width:11%;">Montant</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:12%;">Date et N&#176;<br/>de B.L</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:12%;">Date et N&#176;<br/>de B.E</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:14%;">N&#176; Camion</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Quantit&#233;s<br/>(litres)</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:8%;">Produit</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:18%;">Parcours</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:9%;">Taux</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Montant</th>
                             </tr>
                         </thead>
                         <tbody>
                             <t t-foreach="product_lines" t-as="line">
-                                <tr>
-                                    <td style="border:1px solid #555;padding:5px;text-align:center;vertical-align:middle;">
+                                <tr style="background-color:#ffffff;">
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
                                         <t t-if="line.x_date_bl"><t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/></t>
                                         <t t-out="line.x_numero_bl or ''"/>
                                     </td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:center;vertical-align:middle;">
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
                                         <t t-if="line.x_date_be"><t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/></t>
                                         <t t-out="line.x_numero_be or ''"/>
                                     </td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:center;vertical-align:middle;"><t t-out="line.x_numero_camion or ''"/></td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:center;vertical-align:middle;">
-                                        <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/>
-                                        <t t-if="line.product_uom_id">&#160;<t t-out="line.product_uom_id.name"/></t>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_numero_camion or ''"/></td>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                        <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/> litres
                                     </td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:center;vertical-align:middle;"><t t-out="line.product_id.name or line.name or ''"/></td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:center;vertical-align:middle;"><t t-out="line.x_parcours or ''"/></td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:right;vertical-align:middle;">
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.product_id.name or line.name or ''"/></td>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_parcours or ''"/></td>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
                                         <t t-out="('{:.3f}'.format(line.price_unit)).rstrip('0').rstrip('.').replace('.', ',')"/>
                                     </td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:right;vertical-align:middle;">
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:right;vertical-align:middle;background-color:#ffffff;">
                                         <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
                                     </td>
                                 </tr>
                             </t>
                         </tbody>
                         <tfoot>
-                            <tr>
-                                <td colspan="7" style="border:1px solid #555;padding:5px;text-align:right;font-weight:bold;background-color:#f0f0f0;">MONTANT HT</td>
-                                <td style="border:1px solid #555;padding:5px;text-align:right;font-weight:bold;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
+                            <tr style="background-color:#ffffff;">
+                                <td colspan="7" style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;background-color:#ffffff;">MONTANT HT</td>
+                                <td style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
                             </tr>
                             <t t-foreach="tax_lines" t-as="tl">
-                                <tr>
-                                    <td colspan="7" style="border:1px solid #555;padding:5px;text-align:right;"><t t-out="tl.name"/></td>
-                                    <td style="border:1px solid #555;padding:5px;text-align:right;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
+                                <tr style="background-color:#ffffff;">
+                                    <td colspan="7" style="border:1px solid #555;padding:8px 5px;text-align:right;background-color:#ffffff;"><t t-out="tl.name"/></td>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:right;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
                                 </tr>
                             </t>
-                            <tr>
-                                <td colspan="7" style="border:1px solid #555;padding:5px;text-align:right;font-weight:bold;background-color:#f0f0f0;">MONTANT TTC</td>
-                                <td style="border:1px solid #555;padding:5px;text-align:right;font-weight:bold;color:#CC0000;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
+                            <tr style="background-color:#ffffff;">
+                                <td colspan="7" style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;background-color:#ffffff;">MONTANT TTC</td>
+                                <td style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;color:#CC0000;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
                             </tr>
                         </tfoot>
                     </table>
 
                     <!-- Montant lettres -->
-                    <div t-if="o.x_montant_lettres" style="margin-top:12px;font-size:12px;font-family:Arial,Helvetica,sans-serif;">
+                    <div t-if="o.x_montant_lettres" style="margin-top:28px;font-size:13px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
                         Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
                         <strong t-out="o.x_montant_lettres"/>
                     </div>
 
                     <!-- Signature -->
-                    <div style="text-align:right;margin-top:35px;font-family:Arial,Helvetica,sans-serif;">
+                    <div style="text-align:right;margin-top:35px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
-                        <div t-if="o.x_signataire" style="margin-top:10px;font-weight:bold;">
+                        <div t-if="o.x_signataire" style="margin-top:28px;font-weight:bold;">
                             <t t-out="o.x_signataire"/>
                         </div>
                     </div>
@@ -140,7 +139,7 @@
                                 <path fill="rgba(255,255,255,0.15)" d="M0,85  C300,55 600,40 900,55  T1440,35 L1440,120 L0,120 Z"/>
                             </svg>
                         </div>
-                        <div style="position:relative;z-index:1;padding:14px 20px;text-align:center;color:#ffffff;font-size:10px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;">
+                        <div style="position:relative;z-index:1;padding:14px 20px;text-align:center;color:#ffffff;font-size:10px;line-height:1.6;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
                             <div style="font-weight:bold;font-size:12px;letter-spacing:0.5px;margin-bottom:4px;text-transform:uppercase;">
                                 <t t-out="o.company_id.name"/>
                             </div>
