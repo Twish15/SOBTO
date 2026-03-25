@@ -1,3 +1,5 @@
+from datetime import date
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
@@ -59,6 +61,51 @@ class AccountMove(models.Model):
                     move.x_montant_lettres = ''
             else:
                 move.x_montant_lettres = ''
+
+    # --- Numérotation FACTURE IBTC/AAAA/ N°nnnn (réinitialisation le 1er janvier) ---
+
+    def _get_starting_sequence(self):
+        """Première valeur de la chaîne annuelle (séquence mixin Odoo)."""
+        self.ensure_one()
+        if self.move_type in ('out_invoice', 'out_refund') and self.journal_id.type == 'sale':
+            move_date = self.date or self.invoice_date or fields.Date.context_today(self)
+            year = fields.Date.to_date(move_date).year
+            return f'FACTURE IBTC/{year}/ N°{0:04d}'
+        return super()._get_starting_sequence()
+
+    def _get_last_sequence_domain(self, relaxed=False):
+        """Une série par année civile (1er jan. → 31 déc.), factures et avoirs partagent le compteur."""
+        self.ensure_one()
+        if self.move_type not in ('out_invoice', 'out_refund') or self.journal_id.type != 'sale':
+            return super()._get_last_sequence_domain(relaxed)
+        if not self.date or not self.journal_id:
+            return 'WHERE FALSE', {}
+
+        is_payment = self.origin_payment_id or self.env.context.get('is_payment')
+        where_string = (
+            'WHERE journal_id = %(journal_id)s AND name != \'/\' '
+            'AND name LIKE %(name_prefix)s'
+        )
+        param = {'journal_id': self.journal_id.id}
+
+        if relaxed:
+            param['name_prefix'] = 'FACTURE IBTC/%'
+        else:
+            year = fields.Date.to_date(self.date).year
+            param['name_prefix'] = f'FACTURE IBTC/{year}/ N°%'
+            date_start = date(year, 1, 1)
+            date_end = date(year, 12, 31)
+            where_string += ' AND date BETWEEN %(date_start)s AND %(date_end)s'
+            param['date_start'] = date_start
+            param['date_end'] = date_end
+
+        if self.journal_id.payment_sequence:
+            if is_payment:
+                where_string += ' AND origin_payment_id IS NOT NULL '
+            else:
+                where_string += ' AND origin_payment_id IS NULL '
+
+        return where_string, param
 
     def _get_name_invoice_report(self):
         """Utilise le template SOBTO pour les factures et avoirs clients."""

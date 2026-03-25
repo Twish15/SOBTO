@@ -14,16 +14,16 @@
                 </div>
 
                 <!-- ══ CONTENU ══ -->
-                <div class="article" style="margin:0 25px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;font-size:13px;line-height:1.45;color:#000;">
+                <div class="article" style="margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.45;color:#000;">
 
                     <!-- Ville et date : premier element apres le header -->
-                    <div style="text-align:right;margin-bottom:8px;margin-top:0;padding-top:0;font-size:13px;color:#333;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
+                    <div style="text-align:right;margin-bottom:8px;margin-top:0;padding-top:0;font-size:13px;color:#333;font-family:Arial,Helvetica,sans-serif;">
                         <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
                         <t t-out="o.x_invoice_date_fr"/>
                     </div>
 
                     <!-- Titre -->
-                    <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
+                    <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:16px;margin:10px 0;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">
                         FACTURE <span t-out="o.name"/>
                     </div>
 
@@ -40,7 +40,7 @@
                     </div>
 
                     <!-- Objet -->
-                    <div t-if="o.x_objet" style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:14px;margin:10px 0;letter-spacing:1px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
+                    <div t-if="o.x_objet" style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:16px;margin:10px 0;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">
                         OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
                     </div>
 
@@ -48,9 +48,9 @@
                     <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
                     <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
 
-                    <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;background-color:#ffffff;">
+                    <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
                         <thead>
-                            <tr>
+                            <tr style="font-size:16px;font-family:Arial,Helvetica,sans-serif;">
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:12%;">Date et N&#176;<br/>de B.L</th>
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:12%;">Date et N&#176;<br/>de B.E</th>
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:14%;">N&#176; Camion</th>
@@ -106,13 +106,13 @@
                     </table>
 
                     <!-- Montant lettres -->
-                    <div t-if="o.x_montant_lettres" style="margin-top:28px;font-size:13px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
+                    <div t-if="o.x_montant_lettres" style="margin-top:28px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">
                         Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
                         <strong t-out="o.x_montant_lettres"/>
                     </div>
 
                     <!-- Signature -->
-                    <div style="text-align:right;margin-top:35px;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
+                    <div style="text-align:right;margin-top:35px;font-family:Arial,Helvetica,sans-serif;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
                         <div t-if="o.x_signataire" style="margin-top:28px;font-weight:bold;">
                             <t t-out="o.x_signataire"/>
@@ -139,7 +139,7 @@
                                 <path fill="rgba(255,255,255,0.15)" d="M0,85  C300,55 600,40 900,55  T1440,35 L1440,120 L0,120 Z"/>
                             </svg>
                         </div>
-                        <div style="position:relative;z-index:1;padding:14px 20px;text-align:center;color:#ffffff;font-size:10px;line-height:1.6;font-family:'Segoe UI','DejaVu Sans',Verdana,Arial,sans-serif;">
+                        <div style="position:relative;z-index:1;padding:14px 20px;text-align:center;color:#ffffff;font-size:10px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;">
                             <div style="font-weight:bold;font-size:12px;letter-spacing:0.5px;margin-bottom:4px;text-transform:uppercase;">
                                 <t t-out="o.company_id.name"/>
                             </div>
