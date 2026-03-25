@@ -22,9 +22,14 @@
                         <t t-out="o.x_invoice_date_fr"/>
                     </div>
 
-                    <!-- Titre -->
+                    <!-- Titre : numéro officiel FACTURE IBTC/AAAA/ N°nnnn (une seule ligne, pas de doublon FACTURE) -->
                     <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:16px;margin:10px 0;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">
-                        FACTURE <span t-out="o.name"/>
+                        <t t-if="o.name and o.name != '/'">
+                            <span t-out="o.name"/>
+                        </t>
+                        <t t-else="">
+                            FACTURE IBTC/<t t-out="o.invoice_date.year if o.invoice_date else ''"/>/ N° —
+                        </t>
                     </div>
 
                     <!-- DOIT -->
@@ -111,11 +116,23 @@
                         <strong t-out="o.x_montant_lettres"/>
                     </div>
 
-                    <!-- Signature -->
+                    <!-- Signature : grand espace DG → nom ; images signature / tampon (société) -->
                     <div style="text-align:right;margin-top:35px;font-family:Arial,Helvetica,sans-serif;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
-                        <div t-if="o.x_signataire" style="margin-top:28px;font-weight:bold;">
-                            <t t-out="o.x_signataire"/>
+                        <div style="margin-top:56px;font-weight:bold;">
+                            <t t-out="o.x_signataire or 'Yaya OUATTARA'"/>
+                        </div>
+                        <div t-if="o.company_id.x_invoice_signature or o.company_id.x_invoice_stamp" style="margin-top:22px;">
+                            <table style="margin-left:auto;border-collapse:separate;border-spacing:16px 0;">
+                                <tr>
+                                    <td t-if="o.company_id.x_invoice_signature" style="text-align:right;vertical-align:bottom;padding:0;">
+                                        <img t-attf-src="/web/image/res.company/#{o.company_id.id}/x_invoice_signature" style="max-height:100px;max-width:240px;" alt=""/>
+                                    </td>
+                                    <td t-if="o.company_id.x_invoice_stamp" style="text-align:right;vertical-align:bottom;padding:0;">
+                                        <img t-attf-src="/web/image/res.company/#{o.company_id.id}/x_invoice_stamp" style="max-height:100px;max-width:240px;" alt=""/>
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
 

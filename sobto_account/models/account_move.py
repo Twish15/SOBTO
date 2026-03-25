@@ -24,6 +24,7 @@ class AccountMove(models.Model):
     )
     x_signataire = fields.Char(
         string='Signataire',
+        default='Yaya OUATTARA',
         help='Nom du signataire (ex: Yaya OUATTARA)',
     )
     x_objet = fields.Char(
@@ -55,7 +56,7 @@ class AccountMove(models.Model):
                     amount_str = num2words(amount_int, lang='fr').upper()
                     formatted = f"{amount_int:,}".replace(',', ' ')
                     move.x_montant_lettres = (
-                        f"{amount_str} ({formatted} FCFA HT)"
+                        f"{amount_str} {formatted} FCFA HT"
                     )
                 except Exception:
                     move.x_montant_lettres = ''
