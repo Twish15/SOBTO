@@ -94,7 +94,7 @@
                         </tbody>
                         <tfoot>
                             <tr style="background-color:#ffffff;">
-                                <td colspan="7" style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;background-color:#ffffff;">MONTANT HT</td>
+                                <td colspan="7" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT HT</td>
                                 <td style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
                             </tr>
                             <t t-foreach="tax_lines" t-as="tl">
@@ -104,7 +104,7 @@
                                 </tr>
                             </t>
                             <tr style="background-color:#ffffff;">
-                                <td colspan="7" style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;background-color:#ffffff;">MONTANT TTC</td>
+                                <td colspan="7" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT TTC</td>
                                 <td style="border:1px solid #555;padding:8px 5px;text-align:right;font-weight:bold;color:#CC0000;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
                             </tr>
                         </tfoot>
@@ -119,9 +119,7 @@
                     <!-- Signature : grand espace DG → nom ; images signature / tampon (société) -->
                     <div style="text-align:right;margin-top:35px;font-family:Arial,Helvetica,sans-serif;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
-                        <div style="margin-top:56px;font-weight:bold;">
-                            <t t-out="o.x_signataire or 'Yaya OUATTARA'"/>
-                        </div>
+                        <div style="margin-top:76px;font-weight:bold;">Yaya OUATTARA</div>
                         <div t-if="o.company_id.x_invoice_signature or o.company_id.x_invoice_stamp" style="margin-top:22px;">
                             <table style="margin-left:auto;border-collapse:separate;border-spacing:16px 0;">
                                 <tr>
