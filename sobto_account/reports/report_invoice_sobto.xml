@@ -8,7 +8,7 @@
                 <div class="header">
                     <div style="padding:8px 25px;text-align:left;background-color:#ffffff;">
                         <img t-if="o.company_id.logo"
-                             style="max-height:200px;max-width:auto;"
+                             style="max-height:320px;max-width:100%;width:auto;height:auto;"
                              t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
                     <!-- Signature : grand espace DG → nom ; images signature / tampon (société) -->
                     <div style="text-align:right;margin-top:35px;font-family:Arial,Helvetica,sans-serif;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
-                        <div style="margin-top:76px;font-weight:bold;">Yaya OUATTARA</div>
+                        <div style="margin-top:110px;font-weight:bold;">Yaya OUATTARA</div>
                         <div t-if="o.company_id.x_invoice_signature or o.company_id.x_invoice_stamp" style="margin-top:22px;">
                             <table style="margin-left:auto;border-collapse:separate;border-spacing:16px 0;">
                                 <tr>
