@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Nouveau rapport "Facture SOBTO" - apparaît dans le menu Imprimer -->
-    <!-- Si l'override du rapport par défaut échoue, l'utilisateur peut choisir celui-ci -->
+    <!-- Rapport technique (sans entrée menu Imprimer) : impression directe si besoin -->
     <record id="action_report_invoice_sobto" model="ir.actions.report">
         <field name="name">Facture SOBTO</field>
         <field name="model">account.move</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">sobto_account.report_invoice_sobto</field>
         <field name="print_report_name">Facture SOBTO %s</field>
-        <field name="binding_model_id" ref="account.model_account_move"/>
-        <field name="binding_type">report</field>
+        <field name="binding_model_id" eval="False"/>
     </record>
 </odoo>

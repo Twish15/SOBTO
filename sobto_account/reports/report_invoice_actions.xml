@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Le rapport SOBTO est active via _get_name_invoice_report() dans account_move.py
-         et l'heritage du template account.report_invoice dans report_invoice_sobto.xml -->
+    <!-- Rapports standard du module Comptabilité / Facturation (account) :
+         - account.account_invoices → account.report_invoice_with_payments → t-call account.report_invoice
+         - account.account_invoices_without_payment → account.report_invoice
+         Le template account.report_invoice est surchargé par report_invoice_inherit_sobto pour afficher
+         le PDF SOBTO lorsque account.move._get_name_invoice_report() retourne sobto_account.report_invoice_sobto. -->
 </odoo>
