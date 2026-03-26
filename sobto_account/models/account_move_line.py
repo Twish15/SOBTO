@@ -6,12 +6,38 @@ DEFAULT_QTY_LITRES = 45000.0
 class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
 
+    x_montant_ligne = fields.Monetary(
+        string='Montant',
+        compute='_compute_x_montant_ligne',
+        inverse='_inverse_x_montant_ligne',
+        currency_field='currency_id',
+        help='Montant HT de la ligne ; modifiable pour recalculer le prix unitaire.',
+    )
+
     x_date_bl = fields.Date(string='Date B.L', help='Date du Bon de Livraison')
     x_numero_bl = fields.Char(string='N° B.L', help='Numéro du Bon de Livraison')
     x_date_be = fields.Date(string='Date B.E', help="Date du Bon d'Enlèvement")
     x_numero_be = fields.Char(string='N° B.E', help="Numéro du Bon d'Enlèvement")
     x_numero_camion = fields.Char(string='N° Camion', help='Immatriculation du camion')
     x_parcours = fields.Char(string='Parcours', help='Itinéraire du transport')
+
+    @api.depends('price_subtotal')
+    def _compute_x_montant_ligne(self):
+        for line in self:
+            if line.display_type in ('line_section', 'line_note'):
+                line.x_montant_ligne = False
+            else:
+                line.x_montant_ligne = line.price_subtotal
+
+    def _inverse_x_montant_ligne(self):
+        for line in self:
+            if line.display_type in ('line_section', 'line_note'):
+                continue
+            qty = line.quantity or 0.0
+            factor = 1.0 - (line.discount or 0.0) / 100.0
+            if not qty or not factor:
+                continue
+            line.price_unit = line.x_montant_ligne / (qty * factor)
 
     @api.model
     def _default_uom_litres(self):

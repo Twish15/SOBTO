@@ -25,9 +25,17 @@
                 <field name="x_numero_camion" optional="show" string="N° Camion"/>
             </xpath>
 
-            <!-- Colonne Parcours avant le prix unitaire (Taux) -->
+            <!-- Colonne Parcours avant le prix unitaire -->
             <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_unit']" position="before">
                 <field name="x_parcours" optional="show" string="Parcours"/>
+            </xpath>
+
+            <!-- Montant HT saisissable (recalcule le prix unitaire) ; masquer le sous-total standard pour éviter le doublon -->
+            <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="before">
+                <field name="x_montant_ligne" string="Montant"/>
             </xpath>
 
             <!-- Montant en lettres après les lignes de facture -->

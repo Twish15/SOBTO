@@ -56,8 +56,8 @@
                     <t t-set="show_be" t-value="any(l.x_date_be or l.x_numero_be for l in product_lines)"/>
                     <t t-set="show_camion" t-value="any(l.x_numero_camion for l in product_lines)"/>
                     <t t-set="show_parcours" t-value="any(l.x_parcours for l in product_lines)"/>
-                    <!-- Quantités, Produit, Taux toujours affichés si lignes ; colspan = optionnelles + 4 -->
-                    <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0) + 1"/>
+                    <!-- Quantités, Produit ; colspan = optionnelles + 3 (sans Taux) -->
+                    <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0)"/>
 
                     <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
                         <thead>
@@ -68,8 +68,7 @@
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Quantit&#233;s<br/>(litres)</th>
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:8%;">Produit</th>
                                 <th t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:18%;">Parcours</th>
-                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:9%;">Taux</th>
-                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Montant</th>
+                                <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:14%;">Montant</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,9 +88,6 @@
                                     </td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.product_id.name or line.name or ''"/></td>
                                     <td t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_parcours or ''"/></td>
-                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                        <t t-out="('{:.3f}'.format(line.price_unit)).rstrip('0').rstrip('.').replace('.', ',')"/>
-                                    </td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:right;vertical-align:middle;background-color:#ffffff;">
                                         <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
                                     </td>
