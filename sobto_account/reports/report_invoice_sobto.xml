@@ -8,7 +8,7 @@
                 <div class="header">
                     <div style="padding:8px 25px;text-align:left;background-color:#ffffff;">
                         <img t-if="o.company_id.logo"
-                             style="max-height:180px;max-width:auto;"
+                             style="max-height:200px;max-width:auto;"
                              t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
                     </div>
                 </div>
