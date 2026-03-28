@@ -28,7 +28,7 @@ class AccountMove(models.Model):
         help='Nom du signataire (ex: Yaya OUATTARA)',
     )
     x_objet = fields.Char(
-        string='Objet',
+        string='Objet :',
     )
     x_montant_lettres = fields.Char(
         string='Montant en lettres',
