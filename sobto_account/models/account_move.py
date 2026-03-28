@@ -54,9 +54,10 @@ class AccountMove(models.Model):
                 try:
                     amount_int = int(move.amount_untaxed)
                     amount_str = num2words(amount_int, lang='fr').upper()
-                    formatted = f"{amount_int:,}".replace(',', ' ')
+                    # Ex. TRENTE ( 30 ) FCFA HT — seul le montant chiffré entre parenthèses
+                    num_in_paren = f"{amount_int:,}".replace(',', ' ')
                     move.x_montant_lettres = (
-                        f"{amount_str} {formatted} FCFA HT"
+                        f"{amount_str} ( {num_in_paren} ) FCFA HT"
                     )
                 except Exception:
                     move.x_montant_lettres = ''
