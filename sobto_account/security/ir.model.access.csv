@@ -1,3 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sobto_parcours_invoice,access.sobto.parcours.invoice,model_sobto_parcours,account.group_account_invoice,1,0,1,0
 access_sobto_parcours_manager,access.sobto.parcours.manager,model_sobto_parcours,account.group_account_manager,1,1,1,1
+access_sobto_camion_invoice,access.sobto.camion.invoice,model_sobto_camion,account.group_account_invoice,1,0,1,0
+access_sobto_camion_manager,access.sobto.camion.manager,model_sobto_camion,account.group_account_manager,1,1,1,1
+access_transport_invoice_line_invoice,access.transport.invoice.line.invoice,model_transport_invoice_line,account.group_account_invoice,1,1,1,1
+access_transport_invoice_line_manager,access.transport.invoice.line.manager,model_transport_invoice_line,account.group_account_manager,1,1,1,1

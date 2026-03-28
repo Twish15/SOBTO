@@ -47,14 +47,81 @@
                         OBJET : <span t-out="o.x_objet.upper() if o.x_objet else ''"/>
                     </div>
 
-                    <!-- Tableau : colonnes masquées si aucune ligne n'a de donnée -->
+                    <!-- Tableau facture Transport (8 colonnes + Taux) -->
+                    <t t-if="o.x_invoice_type == 'transport'">
+                        <t t-set="tr_lines" t-value="o.transport_line_ids"/>
+                        <t t-set="colspan_tr" t-value="7"/>
+                        <t t-set="tax_lines_tr" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
+                        <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
+                            <thead>
+                                <tr style="font-size:16px;font-family:Arial,Helvetica,sans-serif;">
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Date et N&#176;<br/>de B.L</th>
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Date et N&#176;<br/>de B.E</th>
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:12%;">N&#176; Camion</th>
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:10%;">Quantit&#233;s<br/>(litres)</th>
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:10%;">Produit</th>
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:18%;">Parcours</th>
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:9%;">Taux</th>
+                                    <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="tr_lines" t-as="tline">
+                                    <tr style="background-color:#ffffff;">
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-if="tline.date_bl"><t t-out="tline.date_bl.strftime('%d/%m/%Y')"/><br/></t>
+                                            <t t-out="tline.bl_number or ''"/>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-if="tline.date_be"><t t-out="tline.date_be.strftime('%d/%m/%Y')"/><br/></t>
+                                            <t t-out="tline.be_number or ''"/>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="tline.camion_id.name if tline.camion_id else ''"/></td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-out="'{:,.0f}'.format(tline.quantity).replace(',', ' ')"/> litres
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-if="tline.product_type == 'gasoil'">GASOIL</t>
+                                            <t t-elif="tline.product_type == 'super'">SUPER</t>
+                                            <t t-elif="tline.product_type == 'petrole'">P&#201;TROLE</t>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="tline.parcours_id.name if tline.parcours_id else ''"/></td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-out="('{:.3f}'.format(tline.taux or 0)).rstrip('0').rstrip('.').replace('.', ',')"/>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-out="'{:,.0f}'.format(tline.montant).replace(',', ' ')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color:#ffffff;">
+                                    <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT HT</td>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
+                                </tr>
+                                <t t-foreach="tax_lines_tr" t-as="tl">
+                                    <tr style="background-color:#ffffff;">
+                                        <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 5px;text-align:center;background-color:#ffffff;"><t t-out="tl.name"/></td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
+                                    </tr>
+                                </t>
+                                <tr style="background-color:#ffffff;">
+                                    <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT TTC</td>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;color:#CC0000;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </t>
+
+                    <!-- Tableau Transit : colonnes masquées si aucune ligne n'a de donnée -->
+                    <t t-if="o.x_invoice_type != 'transport'">
                     <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
                     <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
                     <t t-set="show_bl" t-value="any(l.x_date_bl or l.x_numero_bl for l in product_lines)"/>
                     <t t-set="show_be" t-value="any(l.x_date_be or l.x_numero_be for l in product_lines)"/>
                     <t t-set="show_camion" t-value="any(l.x_numero_camion for l in product_lines)"/>
                     <t t-set="show_parcours" t-value="any(l.x_parcours_id or l.x_parcours for l in product_lines)"/>
-                    <!-- Quantités, Produit ; colspan = optionnelles + 3 (sans Taux) -->
                     <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0)"/>
 
                     <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
@@ -109,6 +176,7 @@
                             </tr>
                         </tfoot>
                     </table>
+                    </t>
 
                     <!-- Montant lettres -->
                     <div t-if="o.x_montant_lettres" style="margin-top:28px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">

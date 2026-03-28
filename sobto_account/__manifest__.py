@@ -1,6 +1,6 @@
 {
     'name': 'SOBTO - Personnalisation Facturation',
-    'version': '18.0.1.11.5',
+    'version': '18.0.1.12.0',
     'category': 'Accounting/Accounting',
     'summary': 'Personnalisation du module de facturation pour SOBTO',
     'author': 'SOBTO',
@@ -8,7 +8,9 @@
     'post_init_hook': 'post_init_hook',
     'data': [
         'security/ir.model.access.csv',
+        'data/transport_products.xml',
         'views/sobto_parcours_views.xml',
+        'views/sobto_camion_views.xml',
         'views/res_partner_views.xml',
         'views/res_company_views.xml',
         'views/account_move_views.xml',

@@ -17,6 +17,37 @@ MOIS_FR = [
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
+    x_invoice_type = fields.Selection(
+        [
+            ('transit', 'Transit'),
+            ('transport', 'Transport'),
+        ],
+        string='Type de facture',
+        default='transit',
+        copy=False,
+    )
+    transport_line_ids = fields.One2many(
+        'transport.invoice.line',
+        'move_id',
+        string='Lignes transport',
+        copy=True,
+    )
+    amount_ht_transport = fields.Monetary(
+        string='Montant HT (transport)',
+        compute='_compute_transport_totals',
+        currency_field='currency_id',
+    )
+    amount_tva_transport = fields.Monetary(
+        string='TVA 18 % (transport)',
+        compute='_compute_transport_totals',
+        currency_field='currency_id',
+    )
+    amount_ttc_transport = fields.Monetary(
+        string='Montant TTC (transport)',
+        compute='_compute_transport_totals',
+        currency_field='currency_id',
+    )
+
     x_invoice_date_fr = fields.Char(
         string='Date (FR)',
         compute='_compute_invoice_date_fr',
@@ -36,6 +67,86 @@ class AccountMove(models.Model):
         store=True,
         help='Si TVA : montant TTC en lettres et mention taxe (18 %). Sinon montant HT.',
     )
+
+    @api.depends('transport_line_ids.montant')
+    def _compute_transport_totals(self):
+        for move in self:
+            ht = sum(move.transport_line_ids.mapped('montant'))
+            tva = ht * 0.18
+            move.amount_ht_transport = ht
+            move.amount_tva_transport = tva
+            move.amount_ttc_transport = ht + tva
+
+    def _get_transport_sale_taxes(self):
+        self.ensure_one()
+        tax = getattr(self.company_id, 'account_sale_tax_id', None)
+        if tax:
+            return tax
+        return self.env['account.tax'].search(
+            [
+                ('company_id', '=', self.company_id.id),
+                ('type_tax_use', '=', 'sale'),
+                ('amount_type', '=', 'percent'),
+            ],
+            limit=1,
+            order='id',
+        )
+
+    def _sync_invoice_lines_from_transport(self):
+        """Recrée les lignes comptables produit à partir des lignes transport (brouillon uniquement)."""
+        for move in self:
+            if move.x_invoice_type != 'transport':
+                continue
+            if move.state != 'draft':
+                continue
+            if move.move_type not in ('out_invoice', 'out_refund'):
+                continue
+            move.invoice_line_ids.filtered(
+                lambda l: l.display_type == 'product'
+            ).unlink()
+            if not move.transport_line_ids:
+                continue
+            tax = move._get_transport_sale_taxes()
+            tax_cmd = [(6, 0, tax.ids)] if tax else [(5, 0, 0)]
+            line_cmds = []
+            for tl in move.transport_line_ids:
+                product = tl._get_product_for_sync()
+                name = product.display_name
+                if tl.parcours_id:
+                    name = f'{name} — {tl.parcours_id.name}'
+                line_cmds.append(
+                    (
+                        0,
+                        0,
+                        {
+                            'product_id': product.id,
+                            'name': name,
+                            'quantity': tl.quantity,
+                            'price_unit': tl.taux,
+                            'tax_ids': tax_cmd,
+                        },
+                    )
+                )
+            move.write({'invoice_line_ids': line_cmds})
+
+    def write(self, vals):
+        res = super().write(vals)
+        if any(
+            k in vals
+            for k in ('x_invoice_type', 'transport_line_ids')
+        ):
+            for move in self:
+                if move.x_invoice_type == 'transport' and move.state == 'draft':
+                    move._sync_invoice_lines_from_transport()
+        return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        moves = super().create(vals_list)
+        for move in moves:
+            if move.x_invoice_type == 'transport' and move.state == 'draft':
+                move._sync_invoice_lines_from_transport()
+        return moves
 
     @api.depends('invoice_date')
     def _compute_invoice_date_fr(self):
@@ -123,6 +234,13 @@ class AccountMove(models.Model):
         return super()._get_name_invoice_report()
 
     def action_post(self):
+        for move in self:
+            if (
+                move.x_invoice_type == 'transport'
+                and move.move_type in ('out_invoice', 'out_refund')
+                and move.state == 'draft'
+            ):
+                move._sync_invoice_lines_from_transport()
         for move in self:
             if move.move_type in ('out_invoice', 'out_refund') and move.partner_id:
                 manquants = []

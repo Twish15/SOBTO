@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="product_transport_gasoil" model="product.product">
+        <field name="name">Prestation transport — Gasoil</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+    </record>
+    <record id="product_transport_super" model="product.product">
+        <field name="name">Prestation transport — Super</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+    </record>
+    <record id="product_transport_petrole" model="product.product">
+        <field name="name">Prestation transport — Pétrole</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+    </record>
+</odoo>

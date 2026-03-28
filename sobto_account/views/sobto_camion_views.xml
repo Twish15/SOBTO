@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sobto_camion_list" model="ir.ui.view">
+        <field name="name">sobto.camion.list</field>
+        <field name="model">sobto.camion</field>
+        <field name="arch" type="xml">
+            <list string="Camions" editable="bottom">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sobto_camion_form" model="ir.ui.view">
+        <field name="name">sobto.camion.form</field>
+        <field name="model">sobto.camion</field>
+        <field name="arch" type="xml">
+            <form string="Camion">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sobto_camion" model="ir.actions.act_window">
+        <field name="name">Camions</field>
+        <field name="res_model">sobto.camion</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_sobto_camion"
+              name="Camions"
+              parent="account.menu_finance"
+              action="action_sobto_camion"
+              sequence="81"/>
+</odoo>
