@@ -6,14 +6,12 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
 
-            <!-- Champ Objet de la facture, avant les lignes -->
-            <xpath expr="//field[@name='invoice_line_ids']" position="before">
-                <group>
-                    <field name="x_objet"
-                           string="Objet"
-                           placeholder="ex: TRANSPORT D'HYDROCARBURES (CODE 404697)"
-                           colspan="2"/>
-                </group>
+            <!-- Objet : sous le client (haut de fiche), pas au-dessus des lignes -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="x_objet"
+                       string="Objet"
+                       placeholder="ex: TRANSPORT D'HYDROCARBURES (CODE 404697)"
+                       colspan="2"/>
             </xpath>
 
             <!-- Colonnes BL / BE / Camion avant la description produit -->
@@ -25,17 +23,17 @@
                 <field name="x_numero_camion" optional="show" string="N° Camion"/>
             </xpath>
 
-            <!-- Colonne Parcours avant le prix unitaire -->
+            <!-- Parcours (liste) avant le prix unitaire -->
             <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_unit']" position="before">
-                <field name="x_parcours" optional="show" string="Parcours"/>
+                <field name="x_parcours_id" optional="show" string="Parcours"/>
             </xpath>
 
-            <!-- Montant HT saisissable (recalcule le prix unitaire) ; masquer le sous-total standard pour éviter le doublon -->
+            <!-- Montant HT saisissable ; masquer le sous-total standard ; contenu centré -->
             <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="attributes">
                 <attribute name="column_invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="before">
-                <field name="x_montant_ligne" string="Montant"/>
+                <field name="x_montant_ligne" string="Montant" class="text-center"/>
             </xpath>
 
             <!-- Montant en lettres après les lignes de facture -->

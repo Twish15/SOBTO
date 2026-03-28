@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sobto_parcours_list" model="ir.ui.view">
+        <field name="name">sobto.parcours.list</field>
+        <field name="model">sobto.parcours</field>
+        <field name="arch" type="xml">
+            <list string="Parcours" editable="bottom">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sobto_parcours_form" model="ir.ui.view">
+        <field name="name">sobto.parcours.form</field>
+        <field name="model">sobto.parcours</field>
+        <field name="arch" type="xml">
+            <form string="Parcours">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sobto_parcours" model="ir.actions.act_window">
+        <field name="name">Parcours</field>
+        <field name="res_model">sobto.parcours</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Ajouter un libellé de parcours (ex. itinéraires habituels).</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_sobto_parcours"
+              name="Parcours transport"
+              parent="account.menu_finance"
+              action="action_sobto_parcours"
+              sequence="80"/>
+</odoo>

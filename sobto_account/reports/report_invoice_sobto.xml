@@ -55,7 +55,7 @@
                     <t t-set="show_bl" t-value="any(l.x_date_bl or l.x_numero_bl for l in product_lines)"/>
                     <t t-set="show_be" t-value="any(l.x_date_be or l.x_numero_be for l in product_lines)"/>
                     <t t-set="show_camion" t-value="any(l.x_numero_camion for l in product_lines)"/>
-                    <t t-set="show_parcours" t-value="any(l.x_parcours for l in product_lines)"/>
+                    <t t-set="show_parcours" t-value="any(l.x_parcours_id or l.x_parcours for l in product_lines)"/>
                     <!-- Quantités, Produit ; colspan = optionnelles + 3 (sans Taux) -->
                     <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0)"/>
 
@@ -87,8 +87,8 @@
                                         <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/> litres
                                     </td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.product_id.name or line.name or ''"/></td>
-                                    <td t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_parcours or ''"/></td>
-                                    <td style="border:1px solid #555;padding:8px 5px;text-align:right;vertical-align:middle;background-color:#ffffff;">
+                                    <td t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_parcours_id.name if line.x_parcours_id else (line.x_parcours or '')"/></td>
+                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
                                         <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
                                     </td>
                                 </tr>
@@ -118,17 +118,17 @@
                         <strong t-out="o.x_montant_lettres"/>
                     </div>
 
-                    <!-- Signature : grand espace DG → nom ; images signature / tampon (société) -->
-                    <div style="text-align:right;margin-top:35px;font-family:Arial,Helvetica,sans-serif;">
+                    <!-- Signature : légèrement vers le centre ; images signature / tampon (société) -->
+                    <div style="margin-top:35px;font-family:Arial,Helvetica,sans-serif;text-align:center;padding-left:18%;padding-right:18%;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
                         <div style="margin-top:110px;font-weight:bold;">Yaya OUATTARA</div>
                         <div t-if="o.company_id.x_invoice_signature or o.company_id.x_invoice_stamp" style="margin-top:22px;">
-                            <table style="margin-left:auto;border-collapse:separate;border-spacing:16px 0;">
+                            <table style="margin-left:auto;margin-right:auto;border-collapse:separate;border-spacing:16px 0;">
                                 <tr>
-                                    <td t-if="o.company_id.x_invoice_signature" style="text-align:right;vertical-align:bottom;padding:0;">
+                                    <td t-if="o.company_id.x_invoice_signature" style="text-align:center;vertical-align:bottom;padding:0;">
                                         <img t-attf-src="/web/image/res.company/#{o.company_id.id}/x_invoice_signature" style="max-height:100px;max-width:240px;" alt=""/>
                                     </td>
-                                    <td t-if="o.company_id.x_invoice_stamp" style="text-align:right;vertical-align:bottom;padding:0;">
+                                    <td t-if="o.company_id.x_invoice_stamp" style="text-align:center;vertical-align:bottom;padding:0;">
                                         <img t-attf-src="/web/image/res.company/#{o.company_id.id}/x_invoice_stamp" style="max-height:100px;max-width:240px;" alt=""/>
                                     </td>
                                 </tr>

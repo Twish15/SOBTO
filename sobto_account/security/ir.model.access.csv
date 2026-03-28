@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sobto_parcours_invoice,access.sobto.parcours.invoice,model_sobto_parcours,account.group_account_invoice,1,0,1,0
+access_sobto_parcours_manager,access.sobto.parcours.manager,model_sobto_parcours,account.group_account_manager,1,1,1,1

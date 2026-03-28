@@ -19,7 +19,16 @@ class AccountMoveLine(models.Model):
     x_date_be = fields.Date(string='Date B.E', help="Date du Bon d'Enlèvement")
     x_numero_be = fields.Char(string='N° B.E', help="Numéro du Bon d'Enlèvement")
     x_numero_camion = fields.Char(string='N° Camion', help='Immatriculation du camion')
-    x_parcours = fields.Char(string='Parcours', help='Itinéraire du transport')
+    x_parcours_id = fields.Many2one(
+        'sobto.parcours',
+        string='Parcours',
+        ondelete='set null',
+        help='Itinéraire (liste paramétrable).',
+    )
+    x_parcours = fields.Char(
+        string='Parcours (ancien)',
+        help='Conservé pour migration ; utiliser le champ Parcours (liste).',
+    )
 
     @api.depends('price_subtotal')
     def _compute_x_montant_ligne(self):

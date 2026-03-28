@@ -35,7 +35,7 @@ class AccountMove(models.Model):
         string='Montant en lettres',
         compute='_compute_montant_lettres',
         store=True,
-        help='Montant HT exprimé en toutes lettres (FCFA)',
+        help='Si TVA : montant TTC en lettres et mention taxe (18 %). Sinon montant HT.',
     )
 
     @api.depends('invoice_date')
@@ -47,21 +47,29 @@ class AccountMove(models.Model):
             else:
                 move.x_invoice_date_fr = ''
 
-    @api.depends('amount_untaxed', 'currency_id')
+    @api.depends('amount_untaxed', 'amount_total', 'amount_tax', 'currency_id')
     def _compute_montant_lettres(self):
         for move in self:
-            if num2words and move.amount_untaxed:
-                try:
-                    amount_int = int(move.amount_untaxed)
-                    amount_str = num2words(amount_int, lang='fr').upper()
-                    # Ex. TRENTE ( 30 ) FCFA HT — seul le montant chiffré entre parenthèses
-                    num_in_paren = f"{amount_int:,}".replace(',', ' ')
-                    move.x_montant_lettres = (
-                        f"{amount_str} ( {num_in_paren} ) FCFA HT"
-                    )
-                except Exception:
-                    move.x_montant_lettres = ''
-            else:
+            if not num2words:
+                move.x_montant_lettres = ''
+                continue
+            try:
+                has_vat = bool(move.amount_tax) and move.amount_tax != 0
+                if has_vat:
+                    amount_val = abs(round(move.amount_total))
+                    suffix = 'FCFA TTC taxe (18%)'
+                else:
+                    if not move.amount_untaxed:
+                        move.x_montant_lettres = ''
+                        continue
+                    amount_val = abs(int(move.amount_untaxed))
+                    suffix = 'FCFA HT'
+                amount_str = num2words(amount_val, lang='fr').upper()
+                num_in_paren = f"{amount_val:,}".replace(',', ' ')
+                move.x_montant_lettres = (
+                    f"{amount_str} ( {num_in_paren} ) {suffix}"
+                )
+            except Exception:
                 move.x_montant_lettres = ''
 
     # --- Numérotation FACTURE IBTC/AAAA/ N°nnnn (réinitialisation le 1er janvier) ---
