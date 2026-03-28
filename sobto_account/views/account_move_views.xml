@@ -9,9 +9,7 @@
             <!-- Objet : sous le client (haut de fiche), pas au-dessus des lignes -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="x_objet"
-                       string="Objet"
-                       placeholder="ex: TRANSPORT D'HYDROCARBURES (CODE 404697)"
-                       colspan="2"/>
+                       placeholder="ex: TRANSPORT D'HYDROCARBURES (CODE 404697)"/>
             </xpath>
 
             <!-- Colonnes BL / BE / Camion avant la description produit -->

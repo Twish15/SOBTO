@@ -29,7 +29,6 @@ class AccountMove(models.Model):
     )
     x_objet = fields.Char(
         string='Objet',
-        help='Objet de la facture (ex: TRANSPORT D\'HYDROCARBURES)',
     )
     x_montant_lettres = fields.Char(
         string='Montant en lettres',
