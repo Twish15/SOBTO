@@ -6,16 +6,12 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
 
-            <!-- Client et Objet : même ligne, deux colonnes (libellés comme les champs standards) -->
+            <!-- Client et Objet : une seule ligne horizontale (group col=2) -->
             <xpath expr="(//sheet//field[@name='partner_id'])[1]" position="replace">
-                <group colspan="2">
-                    <group>
-                        <field name="partner_id"/>
-                    </group>
-                    <group>
-                        <field name="x_objet"
-                               placeholder="ex: TRANSPORT D'HYDROCARBURES (CODE 404697)"/>
-                    </group>
+                <group colspan="2" col="2">
+                    <field name="partner_id"/>
+                    <field name="x_objet"
+                           placeholder="ex: TRANSIT (CODE 404697)"/>
                 </group>
             </xpath>
 
