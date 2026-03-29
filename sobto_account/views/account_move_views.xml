@@ -22,8 +22,8 @@
                 </group>
             </xpath>
 
-            <!-- Lignes facture standard masquées en mode Transport -->
-            <xpath expr="//field[@name='invoice_line_ids']" position="attributes">
+            <!-- Lignes facture standard masquées en mode Transport (xpath limité à l'onglet facture pour éviter ambiguïtés) -->
+            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="attributes">
                 <attribute name="invisible">x_invoice_type == 'transport'</attribute>
             </xpath>
 
@@ -64,20 +64,20 @@
             </xpath>
 
             <!-- Parcours (liste) avant le prix unitaire -->
-            <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_unit']" position="before">
+            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_unit']" position="before">
                 <field name="x_parcours_id" optional="show" string="Parcours"/>
             </xpath>
 
             <!-- Montant HT saisissable ; masquer le sous-total standard ; contenu centré -->
-            <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="attributes">
-                <attribute name="column_invisible">1</attribute>
+            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
             </xpath>
-            <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="before">
+            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="before">
                 <field name="x_montant_ligne" string="Montant" class="text-center"/>
             </xpath>
 
             <!-- Montant en lettres après les lignes de facture -->
-            <xpath expr="//field[@name='invoice_line_ids']" position="after">
+            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="after">
                 <group string="Arrêté">
                     <field name="x_montant_lettres"
                            string="Arrêtée la présente facture à la somme de"

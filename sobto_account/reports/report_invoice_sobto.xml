@@ -250,9 +250,10 @@
 
     <!-- Même PDF SOBTO pour toutes les impressions Facturation (facture / facture avec paiements) :
          account.report_invoice_with_payments appelle account.report_invoice, où ce branchement s'applique. -->
+    <!-- Branchement avant le t-if standard : évite t-elif (fragile sur certains moteurs QWeb / héritages). -->
     <template id="report_invoice_inherit_sobto" inherit_id="account.report_invoice">
-        <xpath expr="//t[@t-if][contains(@t-if, 'account.report_invoice_document')]" position="after">
-            <t t-elif="o._get_name_invoice_report() == 'sobto_account.report_invoice_sobto'"
+        <xpath expr="//t[@t-if][contains(@t-if, 'account.report_invoice_document')]" position="before">
+            <t t-if="o._get_name_invoice_report() == 'sobto_account.report_invoice_sobto'"
                t-call="sobto_account.report_invoice_sobto"
                t-lang="'fr_FR'"/>
         </xpath>
