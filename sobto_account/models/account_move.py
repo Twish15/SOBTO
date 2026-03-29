@@ -65,7 +65,7 @@ class AccountMove(models.Model):
         string='Montant en lettres',
         compute='_compute_montant_lettres',
         store=True,
-        help='Si TVA : montant TTC en lettres et mention taxe (18 %). Sinon montant HT.',
+        help='Si TVA : montant TTC en lettres. Sinon montant HT.',
     )
 
     @api.depends('transport_line_ids.montant')
@@ -168,7 +168,7 @@ class AccountMove(models.Model):
                 has_vat = bool(move.amount_tax) and move.amount_tax != 0
                 if has_vat:
                     amount_val = abs(round(move.amount_total))
-                    suffix = 'FCFA TTC taxe (18%)'
+                    suffix = 'FCFA TTC'
                 else:
                     if not move.amount_untaxed:
                         move.x_montant_lettres = ''
