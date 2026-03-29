@@ -4,8 +4,9 @@
         <field name="name">Prestation transport — Gasoil</field>
         <field name="type">service</field>
         <field name="categ_id" ref="product.product_category_all"/>
-        <field name="uom_id" ref="uom.product_uom_unit"/>
-        <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        <!-- Litres : même catégorie Volume que la quantité saisie sur les lignes transport -->
+        <field name="uom_id" ref="uom.product_uom_litre"/>
+        <field name="uom_po_id" ref="uom.product_uom_litre"/>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>
         <!-- requis si le module sale est installé (NOT NULL sur product_template) -->
@@ -15,8 +16,9 @@
         <field name="name">Prestation transport — Super</field>
         <field name="type">service</field>
         <field name="categ_id" ref="product.product_category_all"/>
-        <field name="uom_id" ref="uom.product_uom_unit"/>
-        <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        <!-- Litres : même catégorie Volume que la quantité saisie sur les lignes transport -->
+        <field name="uom_id" ref="uom.product_uom_litre"/>
+        <field name="uom_po_id" ref="uom.product_uom_litre"/>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>
         <field name="sale_line_warn">no-message</field>
@@ -25,8 +27,9 @@
         <field name="name">Prestation transport — Pétrole</field>
         <field name="type">service</field>
         <field name="categ_id" ref="product.product_category_all"/>
-        <field name="uom_id" ref="uom.product_uom_unit"/>
-        <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        <!-- Litres : même catégorie Volume que la quantité saisie sur les lignes transport -->
+        <field name="uom_id" ref="uom.product_uom_litre"/>
+        <field name="uom_po_id" ref="uom.product_uom_litre"/>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>
         <field name="sale_line_warn">no-message</field>

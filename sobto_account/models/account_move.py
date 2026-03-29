@@ -120,6 +120,7 @@ class AccountMove(models.Model):
                         0,
                         {
                             'product_id': product.id,
+                            'product_uom_id': product.uom_id.id,
                             'name': name,
                             'quantity': tl.quantity,
                             'price_unit': tl.taux,
