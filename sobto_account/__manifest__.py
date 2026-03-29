@@ -1,6 +1,6 @@
 {
     'name': 'SOBTO - Personnalisation Facturation',
-    'version': '18.0.1.12.0',
+    'version': '18.0.1.13.0',
     'category': 'Accounting/Accounting',
     'summary': 'Personnalisation du module de facturation pour SOBTO',
     'author': 'SOBTO',

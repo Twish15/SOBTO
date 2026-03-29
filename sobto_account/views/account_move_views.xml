@@ -24,13 +24,13 @@
 
             <!-- Lignes facture standard masquées en mode Transport -->
             <xpath expr="//field[@name='invoice_line_ids']" position="attributes">
-                <attribute name="attrs">{'invisible': [('x_invoice_type', '=', 'transport')]}</attribute>
+                <attribute name="invisible">x_invoice_type == 'transport'</attribute>
             </xpath>
 
             <!-- Onglet lignes transport -->
             <xpath expr="//notebook" position="inside">
                 <page string="Lignes transport" name="sobto_transport_lines"
-                      attrs="{'invisible': [('x_invoice_type', '!=', 'transport')]}">
+                      invisible="x_invoice_type != 'transport'">
                     <field name="transport_line_ids" nolabel="1"
                            context="{'default_move_id': id}">
                         <list editable="bottom">
