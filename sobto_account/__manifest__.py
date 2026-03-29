@@ -1,10 +1,11 @@
 {
     'name': 'SOBTO - Personnalisation Facturation',
-    'version': '18.0.1.14.0',
+    'version': '18.0.1.15.0',
     'category': 'Accounting/Accounting',
     'summary': 'Personnalisation du module de facturation pour SOBTO',
     'author': 'SOBTO',
-    'depends': ['account'],
+    # sale : champ sale_line_warn obligatoire sur product.template (données transport_products.xml)
+    'depends': ['account', 'sale'],
     'post_init_hook': 'post_init_hook',
     'data': [
         'security/ir.model.access.csv',

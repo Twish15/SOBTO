@@ -8,6 +8,8 @@
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>
+        <!-- requis si le module sale est installé (NOT NULL sur product_template) -->
+        <field name="sale_line_warn">no-message</field>
     </record>
     <record id="product_transport_super" model="product.product">
         <field name="name">Prestation transport — Super</field>
@@ -17,6 +19,7 @@
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>
+        <field name="sale_line_warn">no-message</field>
     </record>
     <record id="product_transport_petrole" model="product.product">
         <field name="name">Prestation transport — Pétrole</field>
@@ -26,5 +29,6 @@
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>
+        <field name="sale_line_warn">no-message</field>
     </record>
 </odoo>
