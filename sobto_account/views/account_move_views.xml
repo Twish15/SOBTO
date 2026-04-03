@@ -24,7 +24,7 @@
 
             <!-- Lignes facture standard masquées en mode Transport (xpath limité à l'onglet facture pour éviter ambiguïtés) -->
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="attributes">
-                <attribute name="invisible">x_invoice_type == 'transport'</attribute>
+                <attribute name="invisible">x_invoice_type in ('transport', 'cmaf')</attribute>
             </xpath>
 
             <!-- Onglet lignes transport -->
@@ -50,6 +50,34 @@
                         <field name="amount_ht_transport" readonly="1"/>
                         <field name="amount_tva_transport" readonly="1"/>
                         <field name="amount_ttc_transport" readonly="1"/>
+                    </group>
+                </page>
+                <page string="Lignes CIMAF" name="sobto_cmaf_lines"
+                      invisible="x_invoice_type != 'cmaf'">
+                    <field name="cmaf_line_ids" nolabel="1"
+                           context="{'default_move_id': id}">
+                        <list editable="bottom">
+                            <field name="num_ordre"/>
+                            <field name="camion_id"/>
+                            <field name="parcours_id"/>
+                            <field name="product_type"/>
+                            <field name="ticket_pesee_bf"/>
+                            <field name="date_sortie"/>
+                            <field name="poids_1ere"/>
+                            <field name="poids_2eme"/>
+                            <field name="poids_net" readonly="1"/>
+                            <field name="poids_net_tonne" readonly="1"/>
+                            <field name="prix_tonne"/>
+                            <field name="montant_htva" readonly="1"/>
+                            <field name="retenue_5" readonly="1"/>
+                            <field name="total_net" readonly="1"/>
+                            <field name="quantity_litres"/>
+                        </list>
+                    </field>
+                    <group class="oe_subtotal_footer oe_right" colspan="2">
+                        <field name="amount_ht_cmaf" readonly="1"/>
+                        <field name="amount_tva_cmaf" readonly="1"/>
+                        <field name="amount_ttc_cmaf" readonly="1"/>
                     </group>
                 </page>
             </xpath>

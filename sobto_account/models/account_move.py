@@ -21,15 +21,25 @@ class AccountMove(models.Model):
         [
             ('transit', 'Transit'),
             ('transport', 'Transport'),
+            ('cmaf', 'CIMAF'),
         ],
         string='Type de facture',
         default='transit',
         copy=False,
     )
+    x_cmaf_attachment_1 = fields.Char(string='Attachement ligne 1')
+    x_cmaf_attachment_2 = fields.Char(string='Attachement ligne 2')
+    x_cmaf_attachment_3 = fields.Char(string='Attachement ligne 3')
     transport_line_ids = fields.One2many(
         'transport.invoice.line',
         'move_id',
         string='Lignes transport',
+        copy=True,
+    )
+    cmaf_line_ids = fields.One2many(
+        'cmaf.invoice.line',
+        'move_id',
+        string='Lignes CIMAF',
         copy=True,
     )
     amount_ht_transport = fields.Monetary(
@@ -45,6 +55,21 @@ class AccountMove(models.Model):
     amount_ttc_transport = fields.Monetary(
         string='Montant TTC (transport)',
         compute='_compute_transport_totals',
+        currency_field='currency_id',
+    )
+    amount_ht_cmaf = fields.Monetary(
+        string='TOTAL GENERAL HT (CIMAF)',
+        compute='_compute_cmaf_totals',
+        currency_field='currency_id',
+    )
+    amount_tva_cmaf = fields.Monetary(
+        string='TVA 18 % (CIMAF)',
+        compute='_compute_cmaf_totals',
+        currency_field='currency_id',
+    )
+    amount_ttc_cmaf = fields.Monetary(
+        string='TOTAL GENERAL TTC (CIMAF)',
+        compute='_compute_cmaf_totals',
         currency_field='currency_id',
     )
 
@@ -76,6 +101,15 @@ class AccountMove(models.Model):
             move.amount_ht_transport = ht
             move.amount_tva_transport = tva
             move.amount_ttc_transport = ht + tva
+
+    @api.depends('cmaf_line_ids.total_net')
+    def _compute_cmaf_totals(self):
+        for move in self:
+            ht = sum(move.cmaf_line_ids.mapped('total_net'))
+            tva = ht * 0.18
+            move.amount_ht_cmaf = ht
+            move.amount_tva_cmaf = tva
+            move.amount_ttc_cmaf = ht + tva
 
     def _get_transport_sale_taxes(self):
         self.ensure_one()
@@ -130,15 +164,58 @@ class AccountMove(models.Model):
                 )
             move.write({'invoice_line_ids': line_cmds})
 
+    def _sync_invoice_lines_from_cmaf(self):
+        """Recrée les lignes comptables à partir des lignes CIMAF (brouillon uniquement)."""
+        for move in self:
+            if move.x_invoice_type != 'cmaf':
+                continue
+            if move.state != 'draft':
+                continue
+            if move.move_type not in ('out_invoice', 'out_refund'):
+                continue
+            move.invoice_line_ids.filtered(
+                lambda l: l.display_type == 'product'
+            ).unlink()
+            if not move.cmaf_line_ids:
+                continue
+            tax = move._get_transport_sale_taxes()
+            tax_cmd = [(6, 0, tax.ids)] if tax else [(5, 0, 0)]
+            line_cmds = []
+            for cl in move.cmaf_line_ids:
+                product = cl._get_product_for_sync()
+                parts = [product.display_name]
+                if cl.camion_id:
+                    parts.append(cl.camion_id.name)
+                if cl.parcours_id:
+                    parts.append(cl.parcours_id.name)
+                name = ' — '.join(parts)
+                line_cmds.append(
+                    (
+                        0,
+                        0,
+                        {
+                            'product_id': product.id,
+                            'product_uom_id': product.uom_id.id,
+                            'name': name,
+                            'quantity': 1.0,
+                            'price_unit': cl.total_net,
+                            'tax_ids': tax_cmd,
+                        },
+                    )
+                )
+            move.write({'invoice_line_ids': line_cmds})
+
     def write(self, vals):
         res = super().write(vals)
         if any(
             k in vals
-            for k in ('x_invoice_type', 'transport_line_ids')
+            for k in ('x_invoice_type', 'transport_line_ids', 'cmaf_line_ids')
         ):
             for move in self:
                 if move.x_invoice_type == 'transport' and move.state == 'draft':
                     move._sync_invoice_lines_from_transport()
+                if move.x_invoice_type == 'cmaf' and move.state == 'draft':
+                    move._sync_invoice_lines_from_cmaf()
         return res
 
     @api.model_create_multi
@@ -147,6 +224,8 @@ class AccountMove(models.Model):
         for move in moves:
             if move.x_invoice_type == 'transport' and move.state == 'draft':
                 move._sync_invoice_lines_from_transport()
+            if move.x_invoice_type == 'cmaf' and move.state == 'draft':
+                move._sync_invoice_lines_from_cmaf()
         return moves
 
     @api.depends('invoice_date')
@@ -242,6 +321,12 @@ class AccountMove(models.Model):
                 and move.state == 'draft'
             ):
                 move._sync_invoice_lines_from_transport()
+            if (
+                move.x_invoice_type == 'cmaf'
+                and move.move_type in ('out_invoice', 'out_refund')
+                and move.state == 'draft'
+            ):
+                move._sync_invoice_lines_from_cmaf()
         for move in self:
             if move.move_type in ('out_invoice', 'out_refund') and move.partner_id:
                 manquants = []

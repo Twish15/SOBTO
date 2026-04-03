@@ -5,3 +5,5 @@ access_sobto_camion_invoice,access.sobto.camion.invoice,model_sobto_camion,accou
 access_sobto_camion_manager,access.sobto.camion.manager,model_sobto_camion,account.group_account_manager,1,1,1,1
 access_transport_invoice_line_invoice,access.transport.invoice.line.invoice,model_transport_invoice_line,account.group_account_invoice,1,1,1,1
 access_transport_invoice_line_manager,access.transport.invoice.line.manager,model_transport_invoice_line,account.group_account_manager,1,1,1,1
+access_cmaf_invoice_line_invoice,access.cmaf.invoice.line.invoice,model_cmaf_invoice_line,account.group_account_invoice,1,1,1,1
+access_cmaf_invoice_line_manager,access.cmaf.invoice.line.manager,model_cmaf_invoice_line,account.group_account_manager,1,1,1,1
