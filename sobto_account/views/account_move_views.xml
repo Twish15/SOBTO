@@ -59,7 +59,6 @@
                         <list editable="bottom">
                             <field name="num_ordre"/>
                             <field name="camion_id"/>
-                            <field name="parcours_id"/>
                             <field name="product_type"/>
                             <field name="ticket_pesee_bf"/>
                             <field name="date_sortie"/>
@@ -71,7 +70,6 @@
                             <field name="montant_htva" readonly="1"/>
                             <field name="retenue_5" readonly="1"/>
                             <field name="total_net" readonly="1"/>
-                            <field name="quantity_litres"/>
                         </list>
                     </field>
                     <group class="oe_subtotal_footer oe_right" colspan="2">
