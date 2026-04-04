@@ -103,7 +103,9 @@ class AccountMove(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        if 'x_objet' in fields_list and not res.get('x_objet'):
+        # fields_list peut être None (tous les champs) : ne pas utiliser « in fields_list » seul.
+        load_objet = fields_list is None or 'x_objet' in fields_list
+        if load_objet and not res.get('x_objet'):
             inv_type = res.get('x_invoice_type', 'transit')
             res['x_objet'] = self._get_default_x_objet(inv_type)
         return res
