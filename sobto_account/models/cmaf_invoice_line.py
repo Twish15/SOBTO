@@ -18,7 +18,6 @@ class CmafInvoiceLine(models.Model):
     )
     num_ordre = fields.Integer(string="N° d'ordre", default=1)
     camion_id = fields.Many2one('sobto.camion', string='Camion', ondelete='set null')
-    parcours_id = fields.Many2one('sobto.parcours', string='Parcours', ondelete='set null')
     product_type = fields.Selection(
         [
             ('gasoil', 'Gasoil'),
@@ -61,12 +60,6 @@ class CmafInvoiceLine(models.Model):
         compute='_compute_amounts',
         store=True,
         currency_field='currency_id',
-    )
-    quantity_litres = fields.Float(
-        string='Quantité (L)',
-        default=45000.0,
-        digits=(16, 3),
-        help='Valeur par défaut 45 000 litres (référence SOBTO).',
     )
     currency_id = fields.Many2one(
         related='move_id.currency_id',

@@ -18,7 +18,7 @@
                 <group colspan="2" col="2">
                     <field name="partner_id"/>
                     <field name="x_objet"
-                           placeholder="ex: TRANSIT (CODE 404697)"/>
+                           placeholder="Libellé selon le type (modifiable)"/>
                 </group>
             </xpath>
 

@@ -13,6 +13,13 @@ MOIS_FR = [
     'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
 ]
 
+# Libellés d'objet par défaut (modifiables sur la facture)
+DEFAULT_X_OBJET_BY_TYPE = {
+    'transit': 'FRAIS DE TRANSIT (CODE  ******)',
+    'transport': "TRANSPORT D'HYDROCARBURES (CODE  ******)",
+    'cmaf': 'TRANSPORT DE TUFF (HOLY MOUNTAIN - OUAGADOUGOU)',
+}
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -92,6 +99,25 @@ class AccountMove(models.Model):
         store=True,
         help='Si TVA : montant TTC en lettres. Sinon montant HT.',
     )
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if 'x_objet' in fields_list and not res.get('x_objet'):
+            inv_type = res.get('x_invoice_type', 'transit')
+            res['x_objet'] = self._get_default_x_objet(inv_type)
+        return res
+
+    @api.model
+    def _get_default_x_objet(self, invoice_type):
+        return DEFAULT_X_OBJET_BY_TYPE.get(
+            invoice_type, DEFAULT_X_OBJET_BY_TYPE['transit']
+        )
+
+    @api.onchange('x_invoice_type')
+    def _onchange_x_invoice_type_objet(self):
+        if self.x_invoice_type:
+            self.x_objet = self._get_default_x_objet(self.x_invoice_type)
 
     @api.depends('transport_line_ids.montant')
     def _compute_transport_totals(self):
@@ -186,8 +212,6 @@ class AccountMove(models.Model):
                 parts = [product.display_name]
                 if cl.camion_id:
                     parts.append(cl.camion_id.name)
-                if cl.parcours_id:
-                    parts.append(cl.parcours_id.name)
                 name = ' — '.join(parts)
                 line_cmds.append(
                     (
@@ -220,6 +244,10 @@ class AccountMove(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        for vals in vals_list:
+            inv_type = vals.get('x_invoice_type', 'transit')
+            if not vals.get('x_objet'):
+                vals['x_objet'] = self._get_default_x_objet(inv_type)
         moves = super().create(vals_list)
         for move in moves:
             if move.x_invoice_type == 'transport' and move.state == 'draft':
