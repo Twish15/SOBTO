@@ -13,11 +13,11 @@
                 </group>
             </xpath>
 
-            <!-- Client et Objet : une seule ligne horizontale (group col=2) -->
+            <!-- Client puis Objet sur toute la largeur (colspan 2) pour les libellés longs -->
             <xpath expr="(//sheet//field[@name='partner_id'])[1]" position="replace">
                 <group colspan="2" col="2">
                     <field name="partner_id"/>
-                    <field name="x_objet"
+                    <field name="x_objet" colspan="2"
                            placeholder="Libellé selon le type (modifiable)"/>
                 </group>
             </xpath>
