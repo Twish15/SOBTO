@@ -37,10 +37,10 @@ class AccountMove(models.Model):
     x_cmaf_attachment_1 = fields.Char(string='Attachement ligne 1')
     x_cmaf_attachment_2 = fields.Char(string='Attachement ligne 2')
     x_cmaf_attachment_3 = fields.Char(string='Attachement ligne 3')
-    x_cmaf_apply_tva = fields.Boolean(
+    x_apply_tva = fields.Boolean(
         string='Appliquer la TVA',
         default=True,
-        help='Si désactivé : pas de TVA sur les lignes comptables, et le PDF n’affiche ni taxes ni total TTC.',
+        help='Par facture : si désactivé, lignes sans TVA (brouillon) et PDF sans lignes de taxes / TTC.',
     )
     transport_line_ids = fields.One2many(
         'transport.invoice.line',
@@ -102,7 +102,7 @@ class AccountMove(models.Model):
         string='Montant en lettres',
         compute='_compute_montant_lettres',
         store=True,
-        help='CIMAF avec TVA : TTC en lettres. CIMAF sans TVA ou autres types : selon les règles habituelles.',
+        help='TTC en lettres si « Appliquer la TVA » est coché, sinon HT.',
     )
 
     @api.model
@@ -126,21 +126,25 @@ class AccountMove(models.Model):
         if self.x_invoice_type:
             self.x_objet = self._get_default_x_objet(self.x_invoice_type)
 
-    @api.depends('transport_line_ids.montant')
+    @api.depends('transport_line_ids.montant', 'x_apply_tva', 'x_invoice_type')
     def _compute_transport_totals(self):
         for move in self:
             ht = sum(move.transport_line_ids.mapped('montant'))
-            tva = ht * 0.18
             move.amount_ht_transport = ht
-            move.amount_tva_transport = tva
-            move.amount_ttc_transport = ht + tva
+            if move.x_invoice_type == 'transport' and not move.x_apply_tva:
+                move.amount_tva_transport = 0.0
+                move.amount_ttc_transport = ht
+            else:
+                tva = ht * 0.18
+                move.amount_tva_transport = tva
+                move.amount_ttc_transport = ht + tva
 
-    @api.depends('cmaf_line_ids.total_net', 'x_cmaf_apply_tva')
+    @api.depends('cmaf_line_ids.total_net', 'x_apply_tva', 'x_invoice_type')
     def _compute_cmaf_totals(self):
         for move in self:
             ht = sum(move.cmaf_line_ids.mapped('total_net'))
             move.amount_ht_cmaf = ht
-            if move.x_invoice_type == 'cmaf' and not move.x_cmaf_apply_tva:
+            if move.x_invoice_type == 'cmaf' and not move.x_apply_tva:
                 move.amount_tva_cmaf = 0.0
                 move.amount_ttc_cmaf = ht
             else:
@@ -178,7 +182,10 @@ class AccountMove(models.Model):
             if not move.transport_line_ids:
                 continue
             tax = move._get_transport_sale_taxes()
-            tax_cmd = [(6, 0, tax.ids)] if tax else [(5, 0, 0)]
+            if move.x_apply_tva:
+                tax_cmd = [(6, 0, tax.ids)] if tax else [(5, 0, 0)]
+            else:
+                tax_cmd = [(5, 0, 0)]
             line_cmds = []
             for tl in move.transport_line_ids:
                 product = tl._get_product_for_sync()
@@ -216,7 +223,7 @@ class AccountMove(models.Model):
             if not move.cmaf_line_ids:
                 continue
             tax = move._get_transport_sale_taxes()
-            if move.x_cmaf_apply_tva:
+            if move.x_apply_tva:
                 tax_cmd = [(6, 0, tax.ids)] if tax else [(5, 0, 0)]
             else:
                 tax_cmd = [(5, 0, 0)]
@@ -243,7 +250,38 @@ class AccountMove(models.Model):
                 )
             move.write({'invoice_line_ids': line_cmds})
 
+    def _sobto_apply_taxes_on_transit_lines(self):
+        """Applique ou retire les taxes sur les lignes produit (Transit, brouillon)."""
+        for move in self:
+            if move.x_invoice_type != 'transit':
+                continue
+            if move.state != 'draft':
+                continue
+            if move.move_type not in ('out_invoice', 'out_refund'):
+                continue
+            lines = move.invoice_line_ids.filtered(
+                lambda l: l.display_type == 'product' and l.product_id
+            )
+            if not lines:
+                continue
+            if not move.x_apply_tva:
+                lines.with_context(skip_sobto_tax_sync=True).write(
+                    {'tax_ids': [(5, 0, 0)]}
+                )
+                continue
+            for line in lines:
+                taxes = line.product_id.taxes_id.filtered(
+                    lambda t: t.company_id == move.company_id
+                )
+                if move.fiscal_position_id:
+                    taxes = move.fiscal_position_id.map_tax(taxes)
+                line.with_context(skip_sobto_tax_sync=True).write(
+                    {'tax_ids': [(6, 0, taxes.ids)]}
+                )
+
     def write(self, vals):
+        if self.env.context.get('skip_sobto_tax_sync'):
+            return super().write(vals)
         res = super().write(vals)
         if any(
             k in vals
@@ -251,7 +289,7 @@ class AccountMove(models.Model):
                 'x_invoice_type',
                 'transport_line_ids',
                 'cmaf_line_ids',
-                'x_cmaf_apply_tva',
+                'x_apply_tva',
             )
         ):
             for move in self:
@@ -259,6 +297,15 @@ class AccountMove(models.Model):
                     move._sync_invoice_lines_from_transport()
                 if move.x_invoice_type == 'cmaf' and move.state == 'draft':
                     move._sync_invoice_lines_from_cmaf()
+        if any(
+            k in vals
+            for k in ('x_apply_tva', 'x_invoice_type', 'invoice_line_ids')
+        ):
+            to_transit = self.filtered(
+                lambda m: m.state == 'draft' and m.x_invoice_type == 'transit'
+            )
+            if to_transit:
+                to_transit._sobto_apply_taxes_on_transit_lines()
         return res
 
     @api.model_create_multi
@@ -273,6 +320,8 @@ class AccountMove(models.Model):
                 move._sync_invoice_lines_from_transport()
             if move.x_invoice_type == 'cmaf' and move.state == 'draft':
                 move._sync_invoice_lines_from_cmaf()
+            if move.x_invoice_type == 'transit' and move.state == 'draft':
+                move._sobto_apply_taxes_on_transit_lines()
         return moves
 
     @api.depends('invoice_date')
@@ -290,7 +339,7 @@ class AccountMove(models.Model):
         'amount_tax',
         'currency_id',
         'x_invoice_type',
-        'x_cmaf_apply_tva',
+        'x_apply_tva',
     )
     def _compute_montant_lettres(self):
         for move in self:
@@ -298,31 +347,19 @@ class AccountMove(models.Model):
                 move.x_montant_lettres = ''
                 continue
             try:
-                # CIMAF : TTC en lettres si TVA appliquée, sinon HT
-                if move.x_invoice_type == 'cmaf':
-                    if move.x_cmaf_apply_tva:
-                        if not move.amount_total:
-                            move.x_montant_lettres = ''
-                            continue
-                        amount_val = abs(round(move.amount_total))
-                        suffix = 'Francs CFA TTC'
-                    else:
-                        if not move.amount_untaxed:
-                            move.x_montant_lettres = ''
-                            continue
-                        amount_val = abs(round(move.amount_untaxed))
-                        suffix = 'Francs CFA HT'
+                # Toutes factures SOBTO : TTC en lettres si TVA demandée, sinon HT
+                if move.x_apply_tva:
+                    if not move.amount_total:
+                        move.x_montant_lettres = ''
+                        continue
+                    amount_val = abs(round(move.amount_total))
+                    suffix = 'Francs CFA TTC'
                 else:
-                    has_vat = bool(move.amount_tax) and move.amount_tax != 0
-                    if has_vat:
-                        amount_val = abs(round(move.amount_total))
-                        suffix = 'FCFA TTC'
-                    else:
-                        if not move.amount_untaxed:
-                            move.x_montant_lettres = ''
-                            continue
-                        amount_val = abs(int(move.amount_untaxed))
-                        suffix = 'FCFA HT'
+                    if not move.amount_untaxed:
+                        move.x_montant_lettres = ''
+                        continue
+                    amount_val = abs(round(move.amount_untaxed))
+                    suffix = 'Francs CFA HT'
                 amount_str = num2words(amount_val, lang='fr').upper()
                 num_in_paren = f"{amount_val:,}".replace(',', ' ')
                 move.x_montant_lettres = (
@@ -396,6 +433,12 @@ class AccountMove(models.Model):
                 and move.state == 'draft'
             ):
                 move._sync_invoice_lines_from_cmaf()
+            if (
+                move.x_invoice_type == 'transit'
+                and move.move_type in ('out_invoice', 'out_refund')
+                and move.state == 'draft'
+            ):
+                move._sobto_apply_taxes_on_transit_lines()
         for move in self:
             if move.move_type in ('out_invoice', 'out_refund') and move.partner_id:
                 manquants = []

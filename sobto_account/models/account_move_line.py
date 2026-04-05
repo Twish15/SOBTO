@@ -91,4 +91,15 @@ class AccountMoveLine(models.Model):
                 uom = self._default_uom_litres()
                 if uom:
                     vals['product_uom_id'] = uom.id
-        return super().create(vals_list)
+        lines = super().create(vals_list)
+        for line in lines:
+            move = line.move_id
+            if (
+                move.state == 'draft'
+                and move.x_invoice_type == 'transit'
+                and not move.x_apply_tva
+                and line.display_type == 'product'
+                and move.move_type in ('out_invoice', 'out_refund')
+            ):
+                line.write({'tax_ids': [(5, 0, 0)]})
+        return lines

@@ -22,24 +22,20 @@
                         <t t-out="o.x_invoice_date_fr"/>
                     </div>
 
-                    <!-- CIMAF : titre centré ; lignes attachement calées à droite (même bord que « Ouagadougou, le … ») -->
+                    <!-- CIMAF : même bandeau titre que Transit/Transit ; attachements en dessous, alignés à droite -->
                     <t t-if="o.x_invoice_type == 'cmaf'">
-                        <div style="position:relative;margin:10px 0;min-height:48px;">
-                            <div style="text-align:center;padding:0 38% 0 0;">
-                                <div style="display:inline-block;background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:15px;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">
-                                    <t t-if="o.name and o.name != '/'">
-                                        <span t-out="o.name"/>
-                                    </t>
-                                    <t t-else="">
-                                        FACTURE IBTC/<t t-out="o.invoice_date.year if o.invoice_date else ''"/>/ N° —
-                                    </t>
-                                </div>
-                            </div>
-                            <div style="position:absolute;right:0;top:0;width:36%;max-width:380px;font-size:11px;text-align:right;line-height:1.55;">
-                                <div t-out="o.x_cmaf_attachment_1 or ''"/>
-                                <div t-out="o.x_cmaf_attachment_2 or ''"/>
-                                <div t-out="o.x_cmaf_attachment_3 or ''"/>
-                            </div>
+                        <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:16px;margin:10px 0;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">
+                            <t t-if="o.name and o.name != '/'">
+                                <span t-out="o.name"/>
+                            </t>
+                            <t t-else="">
+                                FACTURE IBTC/<t t-out="o.invoice_date.year if o.invoice_date else ''"/>/ N° —
+                            </t>
+                        </div>
+                        <div style="text-align:right;font-size:11px;line-height:1.55;margin:0 0 10px 0;font-family:Arial,Helvetica,sans-serif;">
+                            <div t-out="o.x_cmaf_attachment_1 or ''"/>
+                            <div t-out="o.x_cmaf_attachment_2 or ''"/>
+                            <div t-out="o.x_cmaf_attachment_3 or ''"/>
                         </div>
                     </t>
                     <t t-else="">
@@ -121,9 +117,10 @@
                                     <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT HT</td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
                                 </tr>
+                                <t t-if="o.x_apply_tva">
                                 <t t-foreach="tax_lines_tr" t-as="tl">
                                     <tr style="background-color:#ffffff;">
-                                        <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 5px;text-align:center;background-color:#ffffff;"><t t-out="tl.name"/></td>
+                                        <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;"><t t-out="tl.name"/></td>
                                         <td style="border:1px solid #555;padding:8px 5px;text-align:center;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
                                     </tr>
                                 </t>
@@ -131,6 +128,7 @@
                                     <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT TTC</td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;color:#CC0000;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
                                 </tr>
+                                </t>
                             </tfoot>
                         </table>
                     </t>
@@ -207,9 +205,10 @@
                                     <td colspan="12" style="border:1px solid #555;padding:6px 4px;text-align:center;font-weight:bold;vertical-align:middle;">TOTAL GENERAL HT</td>
                                     <td style="border:1px solid #555;padding:6px 4px;text-align:center;font-weight:bold;vertical-align:middle;"><t t-out="'{:,.0f}'.format(sum_net_cm).replace(',', ' ')"/></td>
                                 </tr>
+                                <t t-if="o.x_apply_tva">
                                 <t t-foreach="tax_lines_cm" t-as="tlc">
                                     <tr>
-                                        <td colspan="12" style="border:1px solid #555;padding:6px 4px;text-align:center;vertical-align:middle;"><t t-out="tlc.name"/></td>
+                                        <td colspan="12" style="border:1px solid #555;padding:6px 4px;text-align:center;font-weight:bold;vertical-align:middle;"><t t-out="tlc.name"/></td>
                                         <td style="border:1px solid #555;padding:6px 4px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(abs(tlc.balance)).replace(',', ' ')"/></td>
                                     </tr>
                                 </t>
@@ -217,6 +216,7 @@
                                     <td colspan="12" style="border:1px solid #555;padding:6px 4px;text-align:center;font-weight:bold;vertical-align:middle;">TOTAL GENERAL TTC</td>
                                     <td style="border:1px solid #555;padding:6px 4px;text-align:center;font-weight:bold;color:#CC0000;vertical-align:middle;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
                                 </tr>
+                                </t>
                             </tfoot>
                         </table>
                     </t>
@@ -271,9 +271,10 @@
                                 <td t-att-colspan="colspan_foot" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT HT</td>
                                 <td style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/></td>
                             </tr>
+                            <t t-if="o.x_apply_tva">
                             <t t-foreach="tax_lines" t-as="tl">
                                 <tr style="background-color:#ffffff;">
-                                    <td t-att-colspan="colspan_foot" style="border:1px solid #555;padding:8px 5px;text-align:center;background-color:#ffffff;"><t t-out="tl.name"/></td>
+                                    <td t-att-colspan="colspan_foot" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;"><t t-out="tl.name"/></td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(abs(tl.balance)).replace(',', ' ')"/></td>
                                 </tr>
                             </t>
@@ -281,6 +282,7 @@
                                 <td t-att-colspan="colspan_foot" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;">MONTANT TTC</td>
                                 <td style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;color:#CC0000;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/></td>
                             </tr>
+                            </t>
                         </tfoot>
                     </table>
                     </t>
