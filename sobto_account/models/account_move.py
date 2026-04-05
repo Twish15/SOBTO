@@ -267,23 +267,37 @@ class AccountMove(models.Model):
             else:
                 move.x_invoice_date_fr = ''
 
-    @api.depends('amount_untaxed', 'amount_total', 'amount_tax', 'currency_id')
+    @api.depends(
+        'amount_untaxed',
+        'amount_total',
+        'amount_tax',
+        'currency_id',
+        'x_invoice_type',
+    )
     def _compute_montant_lettres(self):
         for move in self:
             if not num2words:
                 move.x_montant_lettres = ''
                 continue
             try:
-                has_vat = bool(move.amount_tax) and move.amount_tax != 0
-                if has_vat:
-                    amount_val = abs(round(move.amount_total))
-                    suffix = 'FCFA TTC'
-                else:
+                # CIMAF : toujours montant HT en lettres (comme papier officiel)
+                if move.x_invoice_type == 'cmaf':
                     if not move.amount_untaxed:
                         move.x_montant_lettres = ''
                         continue
-                    amount_val = abs(int(move.amount_untaxed))
-                    suffix = 'FCFA HT'
+                    amount_val = abs(round(move.amount_untaxed))
+                    suffix = 'Francs CFA HT'
+                else:
+                    has_vat = bool(move.amount_tax) and move.amount_tax != 0
+                    if has_vat:
+                        amount_val = abs(round(move.amount_total))
+                        suffix = 'FCFA TTC'
+                    else:
+                        if not move.amount_untaxed:
+                            move.x_montant_lettres = ''
+                            continue
+                        amount_val = abs(int(move.amount_untaxed))
+                        suffix = 'FCFA HT'
                 amount_str = num2words(amount_val, lang='fr').upper()
                 num_in_paren = f"{amount_val:,}".replace(',', ' ')
                 move.x_montant_lettres = (

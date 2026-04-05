@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Camions autorisés pour les factures CIMAF (liste fixe SOBTO) -->
+        <record id="camion_cmaf_999ww1426" model="sobto.camion">
+            <field name="name">999WW1426</field>
+        </record>
+        <record id="camion_cmaf_999ww1455" model="sobto.camion">
+            <field name="name">999WW1455</field>
+        </record>
+        <record id="camion_cmaf_999ww1151" model="sobto.camion">
+            <field name="name">999WW1151</field>
+        </record>
+    </data>
+</odoo>

@@ -11,6 +11,13 @@
                 <group>
                     <field name="x_invoice_type" widget="radio" options="{'horizontal': true}"/>
                 </group>
+                <group string="Attachement (PDF CIMAF)" invisible="x_invoice_type != 'cmaf'" colspan="2">
+                    <group col="1" colspan="2">
+                        <field name="x_cmaf_attachment_1" placeholder="Ligne 1"/>
+                        <field name="x_cmaf_attachment_2" placeholder="Ligne 2"/>
+                        <field name="x_cmaf_attachment_3" placeholder="Ligne 3"/>
+                    </group>
+                </group>
             </xpath>
 
             <!-- Client puis Objet sur toute la largeur (colspan 2) pour les libellés longs -->

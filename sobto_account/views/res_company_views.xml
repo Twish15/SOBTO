@@ -9,6 +9,7 @@
                 <group string="Facture PDF SOBTO" name="sobto_invoice_pdf">
                     <field name="x_invoice_signature" widget="image"/>
                     <field name="x_invoice_stamp" widget="image"/>
+                    <field name="x_cmaf_payment_rib" colspan="2" placeholder="Texte après « SUR LE COMPTE : » sur facture CIMAF"/>
                 </group>
             </xpath>
         </field>

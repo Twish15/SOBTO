@@ -2,6 +2,9 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+# Immatriculations autorisées sur les lignes facture CIMAF (cf. data/cmaf_camions.xml)
+CIMAF_CAMION_NAMES = ('999WW1426', '999WW1455', '999WW1151')
+
 
 class CmafInvoiceLine(models.Model):
     _name = 'cmaf.invoice.line'
@@ -17,14 +20,21 @@ class CmafInvoiceLine(models.Model):
         index=True,
     )
     num_ordre = fields.Integer(string="N° d'ordre", default=1)
-    camion_id = fields.Many2one('sobto.camion', string='Camion', ondelete='set null')
+    camion_id = fields.Many2one(
+        'sobto.camion',
+        string='Camion',
+        ondelete='set null',
+        domain=[('name', 'in', list(CIMAF_CAMION_NAMES))],
+    )
     product_type = fields.Selection(
         [
+            ('tuff', 'TUFF'),
             ('gasoil', 'Gasoil'),
             ('super', 'Super'),
             ('petrole', 'Pétrole'),
         ],
         string='Produit',
+        default='tuff',
     )
     ticket_pesee_bf = fields.Char(string='Ticket de pesée BF')
     date_sortie = fields.Date(string='Date de sortie')
@@ -42,7 +52,11 @@ class CmafInvoiceLine(models.Model):
         store=True,
         digits=(16, 3),
     )
-    prix_tonne = fields.Float(string='Prix à la tonne', digits=(16, 3))
+    prix_tonne = fields.Float(
+        string='Prix à la tonne',
+        digits=(16, 3),
+        default=3500.0,
+    )
     montant_htva = fields.Monetary(
         string='Montant HTVA',
         compute='_compute_amounts',
@@ -85,8 +99,11 @@ class CmafInvoiceLine(models.Model):
     def _get_product_for_sync(self):
         self.ensure_one()
         if not self.product_type:
-            raise UserError(_('Sélectionnez un produit (Gasoil, Super ou Pétrole) sur chaque ligne CIMAF.'))
+            raise UserError(
+                _('Sélectionnez un produit (TUFF, Gasoil, Super ou Pétrole) sur chaque ligne CIMAF.')
+            )
         xml_id = {
+            'tuff': 'sobto_account.product_transport_tuff',
             'gasoil': 'sobto_account.product_transport_gasoil',
             'super': 'sobto_account.product_transport_super',
             'petrole': 'sobto_account.product_transport_petrole',

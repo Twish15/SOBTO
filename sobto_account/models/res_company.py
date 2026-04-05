@@ -17,3 +17,10 @@ class ResCompany(models.Model):
         max_width=1920,
         max_height=1920,
     )
+    x_cmaf_payment_rib = fields.Text(
+        string='Compte / libellé paiement CIMAF (PDF)',
+        default=(
+            "N° 171 01601 060494104001 - 41 ORABANK INTITULE CODEC OUAGA N°103/02212"
+        ),
+        help='Texte affiché après « SUR LE COMPTE : » sur la facture CIMAF.',
+    )
