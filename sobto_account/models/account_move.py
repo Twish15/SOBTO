@@ -37,6 +37,11 @@ class AccountMove(models.Model):
     x_cmaf_attachment_1 = fields.Char(string='Attachement ligne 1')
     x_cmaf_attachment_2 = fields.Char(string='Attachement ligne 2')
     x_cmaf_attachment_3 = fields.Char(string='Attachement ligne 3')
+    x_cmaf_apply_tva = fields.Boolean(
+        string='Appliquer la TVA',
+        default=True,
+        help='Si désactivé : pas de TVA sur les lignes comptables, et le PDF n’affiche ni taxes ni total TTC.',
+    )
     transport_line_ids = fields.One2many(
         'transport.invoice.line',
         'move_id',
@@ -97,7 +102,7 @@ class AccountMove(models.Model):
         string='Montant en lettres',
         compute='_compute_montant_lettres',
         store=True,
-        help='Si TVA : montant TTC en lettres. Sinon montant HT.',
+        help='CIMAF avec TVA : TTC en lettres. CIMAF sans TVA ou autres types : selon les règles habituelles.',
     )
 
     @api.model
@@ -130,14 +135,18 @@ class AccountMove(models.Model):
             move.amount_tva_transport = tva
             move.amount_ttc_transport = ht + tva
 
-    @api.depends('cmaf_line_ids.total_net')
+    @api.depends('cmaf_line_ids.total_net', 'x_cmaf_apply_tva')
     def _compute_cmaf_totals(self):
         for move in self:
             ht = sum(move.cmaf_line_ids.mapped('total_net'))
-            tva = ht * 0.18
             move.amount_ht_cmaf = ht
-            move.amount_tva_cmaf = tva
-            move.amount_ttc_cmaf = ht + tva
+            if move.x_invoice_type == 'cmaf' and not move.x_cmaf_apply_tva:
+                move.amount_tva_cmaf = 0.0
+                move.amount_ttc_cmaf = ht
+            else:
+                tva = ht * 0.18
+                move.amount_tva_cmaf = tva
+                move.amount_ttc_cmaf = ht + tva
 
     def _get_transport_sale_taxes(self):
         self.ensure_one()
@@ -207,7 +216,10 @@ class AccountMove(models.Model):
             if not move.cmaf_line_ids:
                 continue
             tax = move._get_transport_sale_taxes()
-            tax_cmd = [(6, 0, tax.ids)] if tax else [(5, 0, 0)]
+            if move.x_cmaf_apply_tva:
+                tax_cmd = [(6, 0, tax.ids)] if tax else [(5, 0, 0)]
+            else:
+                tax_cmd = [(5, 0, 0)]
             line_cmds = []
             for cl in move.cmaf_line_ids:
                 product = cl._get_product_for_sync()
@@ -235,7 +247,12 @@ class AccountMove(models.Model):
         res = super().write(vals)
         if any(
             k in vals
-            for k in ('x_invoice_type', 'transport_line_ids', 'cmaf_line_ids')
+            for k in (
+                'x_invoice_type',
+                'transport_line_ids',
+                'cmaf_line_ids',
+                'x_cmaf_apply_tva',
+            )
         ):
             for move in self:
                 if move.x_invoice_type == 'transport' and move.state == 'draft':
@@ -273,6 +290,7 @@ class AccountMove(models.Model):
         'amount_tax',
         'currency_id',
         'x_invoice_type',
+        'x_cmaf_apply_tva',
     )
     def _compute_montant_lettres(self):
         for move in self:
@@ -280,13 +298,20 @@ class AccountMove(models.Model):
                 move.x_montant_lettres = ''
                 continue
             try:
-                # CIMAF : toujours montant HT en lettres (comme papier officiel)
+                # CIMAF : TTC en lettres si TVA appliquée, sinon HT
                 if move.x_invoice_type == 'cmaf':
-                    if not move.amount_untaxed:
-                        move.x_montant_lettres = ''
-                        continue
-                    amount_val = abs(round(move.amount_untaxed))
-                    suffix = 'Francs CFA HT'
+                    if move.x_cmaf_apply_tva:
+                        if not move.amount_total:
+                            move.x_montant_lettres = ''
+                            continue
+                        amount_val = abs(round(move.amount_total))
+                        suffix = 'Francs CFA TTC'
+                    else:
+                        if not move.amount_untaxed:
+                            move.x_montant_lettres = ''
+                            continue
+                        amount_val = abs(round(move.amount_untaxed))
+                        suffix = 'Francs CFA HT'
                 else:
                     has_vat = bool(move.amount_tax) and move.amount_tax != 0
                     if has_vat:
