@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Camions par défaut (alternés) sur les lignes facture Transit -->
+        <record id="camion_transit_7895" model="sobto.camion">
+            <field name="name">7895G703BF/3278G803BF</field>
+        </record>
+        <record id="camion_transit_7812" model="sobto.camion">
+            <field name="name">7812F603BF/7462F703BF</field>
+        </record>
+    </data>
+</odoo>

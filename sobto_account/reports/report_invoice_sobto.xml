@@ -8,7 +8,7 @@
                 <div class="header">
                     <div style="padding:8px 25px;text-align:left;background-color:#ffffff;">
                         <img t-if="o.company_id.logo"
-                             style="max-height:320px;max-width:100%;width:auto;height:auto;"
+                             style="max-height:520px;max-width:100%;width:auto;height:auto;"
                              t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
                     </div>
                 </div>
@@ -227,7 +227,7 @@
                     <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
                     <t t-set="show_bl" t-value="any(l.x_date_bl or l.x_numero_bl for l in product_lines)"/>
                     <t t-set="show_be" t-value="any(l.x_date_be or l.x_numero_be for l in product_lines)"/>
-                    <t t-set="show_camion" t-value="any(l.x_numero_camion for l in product_lines)"/>
+                    <t t-set="show_camion" t-value="any(l.x_camion_id or l.x_numero_camion for l in product_lines)"/>
                     <t t-set="show_parcours" t-value="any(l.x_parcours_id or l.x_parcours for l in product_lines)"/>
                     <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0)"/>
 
@@ -254,7 +254,7 @@
                                         <t t-if="line.x_date_be"><t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/></t>
                                         <t t-out="line.x_numero_be or ''"/>
                                     </td>
-                                    <td t-if="show_camion" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_numero_camion or ''"/></td>
+                                    <td t-if="show_camion" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="(line.x_camion_id.name or line.x_numero_camion) or ''"/></td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
                                         <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/> litres
                                     </td>

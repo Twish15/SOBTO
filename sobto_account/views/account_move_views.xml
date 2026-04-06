@@ -96,7 +96,8 @@
                 <field name="x_numero_bl"  optional="show" string="N° B.L"/>
                 <field name="x_date_be"    optional="show" string="Date B.E"/>
                 <field name="x_numero_be"  optional="show" string="N° B.E"/>
-                <field name="x_numero_camion" optional="show" string="N° Camion"/>
+                <field name="x_camion_id" optional="show" string="Camion"
+                       options="{'no_create': False, 'no_create_edit': False}"/>
             </xpath>
 
             <!-- Parcours (liste) avant le prix unitaire -->

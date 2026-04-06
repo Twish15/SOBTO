@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -19,7 +21,7 @@ class CmafInvoiceLine(models.Model):
         ondelete='cascade',
         index=True,
     )
-    num_ordre = fields.Integer(string="N° d'ordre", default=1)
+    num_ordre = fields.Integer(string="N° d'ordre", default=1, copy=False)
     camion_id = fields.Many2one(
         'sobto.camion',
         string='Camion',
@@ -115,8 +117,25 @@ class CmafInvoiceLine(models.Model):
         except ValueError as e:
             raise UserError(_('Produit de transport manquant (données module).')) from e
 
+    def _assign_num_ordre_on_create(self, vals_list):
+        """Numérotation 1, 2, 3… par facture ; prochain libre à chaque nouvelle ligne."""
+        by_move = defaultdict(list)
+        for i, vals in enumerate(vals_list):
+            mid = vals.get('move_id')
+            if isinstance(mid, (list, tuple)):
+                mid = mid[0] if mid else None
+            if mid:
+                by_move[mid].append(i)
+        for move_id, indices in by_move.items():
+            existing = self.search([('move_id', '=', move_id)]).mapped('num_ordre')
+            max_ord = max(existing) if existing else 0
+            for idx in indices:
+                max_ord += 1
+                vals_list[idx]['num_ordre'] = max_ord
+
     @api.model_create_multi
     def create(self, vals_list):
+        self._assign_num_ordre_on_create(vals_list)
         lines = super().create(vals_list)
         lines._after_cmaf_change()
         return lines

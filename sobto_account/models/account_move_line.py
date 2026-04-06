@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from odoo import api, fields, models
 
 DEFAULT_QTY_LITRES = 45000.0
@@ -18,7 +20,16 @@ class AccountMoveLine(models.Model):
     x_numero_bl = fields.Char(string='N° B.L', help='Numéro du Bon de Livraison')
     x_date_be = fields.Date(string='Date B.E', help="Date du Bon d'Enlèvement")
     x_numero_be = fields.Char(string='N° B.E', help="Numéro du Bon d'Enlèvement")
-    x_numero_camion = fields.Char(string='N° Camion', help='Immatriculation du camion')
+    x_numero_camion = fields.Char(
+        string='N° Camion (ancien)',
+        help='Conservé pour migration / affichage ; utiliser le champ Camion.',
+    )
+    x_camion_id = fields.Many2one(
+        'sobto.camion',
+        string='Camion',
+        ondelete='set null',
+        help='Immatriculation ou repère (liste paramétrable, comme CIMAF).',
+    )
     x_parcours_id = fields.Many2one(
         'sobto.parcours',
         string='Parcours',
@@ -56,6 +67,48 @@ class AccountMoveLine(models.Model):
             uom = Uom.search([('name', 'in', ('L', 'l'))], limit=1)
         return uom
 
+    def _get_transit_default_camion(self, move, line_index):
+        """Alterne les deux camions Transit par défaut (ligne 1, 2, 1, 2…)."""
+        if not move or move.x_invoice_type != 'transit':
+            return self.env['sobto.camion']
+        cam1 = self.env.ref(
+            'sobto_account.camion_transit_7895', raise_if_not_found=False
+        )
+        cam2 = self.env.ref(
+            'sobto_account.camion_transit_7812', raise_if_not_found=False
+        )
+        pick = cam1 if (line_index % 2 == 0) else cam2
+        return pick or cam1 or cam2 or self.env['sobto.camion']
+
+    def _assign_transit_camion_defaults(self, vals_list):
+        by_move = defaultdict(list)
+        for i, vals in enumerate(vals_list):
+            mid = vals.get('move_id')
+            if isinstance(mid, (list, tuple)):
+                mid = mid[0] if mid else None
+            if not mid:
+                continue
+            if vals.get('x_camion_id'):
+                continue
+            if 'x_camion_id' in vals and not vals.get('x_camion_id'):
+                continue
+            by_move[mid].append(i)
+        for move_id, indices in by_move.items():
+            move = self.env['account.move'].browse(move_id)
+            if move.x_invoice_type != 'transit':
+                continue
+            if move.move_type not in ('out_invoice', 'out_refund'):
+                continue
+            existing = len(
+                move.invoice_line_ids.filtered(
+                    lambda l: l.display_type == 'product'
+                )
+            )
+            for j, idx in enumerate(indices):
+                cam = self._get_transit_default_camion(move, existing + j)
+                if cam:
+                    vals_list[idx]['x_camion_id'] = cam.id
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -66,18 +119,33 @@ class AccountMoveLine(models.Model):
             move = self.env['account.move'].browse(move_id)
             move_type = move.move_type
         if move_type in ('out_invoice', 'out_refund'):
-            if 'quantity' in fields_list:
+            if fields_list is None or 'quantity' in fields_list:
                 qty = res.get('quantity')
                 if qty in (False, None) or qty == 0:
                     res['quantity'] = DEFAULT_QTY_LITRES
-            if 'product_uom_id' in fields_list and not res.get('product_uom_id'):
+            if (fields_list is None or 'product_uom_id' in fields_list) and not res.get(
+                'product_uom_id'
+            ):
                 uom = self._default_uom_litres()
                 if uom:
                     res['product_uom_id'] = uom.id
+            load_camion = fields_list is None or 'x_camion_id' in fields_list
+            if load_camion and move_id and not res.get('x_camion_id'):
+                move = self.env['account.move'].browse(move_id)
+                if move.x_invoice_type == 'transit':
+                    idx = len(
+                        move.invoice_line_ids.filtered(
+                            lambda l: l.display_type == 'product'
+                        )
+                    )
+                    cam = self._get_transit_default_camion(move, idx)
+                    if cam:
+                        res['x_camion_id'] = cam.id
         return res
 
     @api.model_create_multi
     def create(self, vals_list):
+        self._assign_transit_camion_defaults(vals_list)
         for vals in vals_list:
             move_id = vals.get('move_id')
             if not move_id:

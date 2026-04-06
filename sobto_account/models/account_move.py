@@ -109,6 +109,14 @@ class AccountMove(models.Model):
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         # fields_list peut être None (tous les champs) : ne pas utiliser « in fields_list » seul.
+        load_date = fields_list is None or 'invoice_date' in fields_list
+        if load_date and res.get('move_type') in (
+            'out_invoice',
+            'out_refund',
+            'in_invoice',
+            'in_refund',
+        ) and not res.get('invoice_date'):
+            res['invoice_date'] = fields.Date.context_today(self)
         load_objet = fields_list is None or 'x_objet' in fields_list
         if load_objet and not res.get('x_objet'):
             inv_type = res.get('x_invoice_type', 'transit')
