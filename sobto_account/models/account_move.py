@@ -37,6 +37,7 @@ class AccountMove(models.Model):
     x_cmaf_attachment_1 = fields.Char(string='Attachement ligne 1')
     x_cmaf_attachment_2 = fields.Char(string='Attachement ligne 2')
     x_cmaf_attachment_3 = fields.Char(string='Attachement ligne 3')
+    x_cmaf_attachment_4 = fields.Char(string='Attachement ligne 4')
     x_apply_tva = fields.Boolean(
         string='Appliquer la TVA',
         default=True,
@@ -147,10 +148,18 @@ class AccountMove(models.Model):
                 move.amount_tva_transport = tva
                 move.amount_ttc_transport = ht + tva
 
-    @api.depends('cmaf_line_ids.total_net', 'x_apply_tva', 'x_invoice_type')
+    @api.depends(
+        'cmaf_line_ids.total_net',
+        'cmaf_line_ids.display_type',
+        'x_apply_tva',
+        'x_invoice_type',
+    )
     def _compute_cmaf_totals(self):
         for move in self:
-            ht = sum(move.cmaf_line_ids.mapped('total_net'))
+            product_lines = move.cmaf_line_ids.filtered(
+                lambda l: l.display_type == 'product'
+            )
+            ht = sum(product_lines.mapped('total_net'))
             move.amount_ht_cmaf = ht
             if move.x_invoice_type == 'cmaf' and not move.x_apply_tva:
                 move.amount_tva_cmaf = 0.0
@@ -226,7 +235,7 @@ class AccountMove(models.Model):
             if move.move_type not in ('out_invoice', 'out_refund'):
                 continue
             move.invoice_line_ids.filtered(
-                lambda l: l.display_type == 'product'
+                lambda l: l.display_type in ('product', 'line_section', 'line_note')
             ).unlink()
             if not move.cmaf_line_ids:
                 continue
@@ -237,6 +246,19 @@ class AccountMove(models.Model):
                 tax_cmd = [(5, 0, 0)]
             line_cmds = []
             for cl in move.cmaf_line_ids:
+                if cl.display_type == 'line_section':
+                    line_cmds.append(
+                        (
+                            0,
+                            0,
+                            {
+                                'sequence': cl.sequence,
+                                'display_type': 'line_section',
+                                'name': cl.name or ' ',
+                            },
+                        )
+                    )
+                    continue
                 product = cl._get_product_for_sync()
                 parts = [product.display_name]
                 if cl.camion_id:
@@ -247,6 +269,7 @@ class AccountMove(models.Model):
                         0,
                         0,
                         {
+                            'sequence': cl.sequence,
                             'product_id': product.id,
                             'product_uom_id': product.uom_id.id,
                             'name': name,

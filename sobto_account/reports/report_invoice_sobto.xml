@@ -36,6 +36,7 @@
                             <div t-out="o.x_cmaf_attachment_1 or ''"/>
                             <div t-out="o.x_cmaf_attachment_2 or ''"/>
                             <div t-out="o.x_cmaf_attachment_3 or ''"/>
+                            <div t-out="o.x_cmaf_attachment_4 or ''"/>
                         </div>
                     </t>
                     <t t-else="">
@@ -136,13 +137,14 @@
                     <!-- Tableau CIMAF (pesée / tonne / retenue 5 %) — tout centré, en-tête répété en impression -->
                     <t t-if="o.x_invoice_type == 'cmaf'">
                         <t t-set="cim_lines" t-value="o.cmaf_line_ids"/>
+                        <t t-set="cim_prod_lines" t-value="cim_lines.filtered(lambda l: l.display_type == 'product')"/>
                         <t t-set="tax_lines_cm" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
-                        <t t-set="sum_htva_cm" t-value="sum(cim_lines.mapped('montant_htva'))"/>
-                        <t t-set="sum_ret_cm" t-value="sum(cim_lines.mapped('retenue_5'))"/>
-                        <t t-set="sum_net_cm" t-value="sum(cim_lines.mapped('total_net'))"/>
-                        <t t-set="sum_poids_net_cm" t-value="sum(cim_lines.mapped('poids_net'))"/>
-                        <t t-set="sum_poids_tonne_cm" t-value="sum(cim_lines.mapped('poids_net_tonne'))"/>
-                        <t t-set="prix_ref_cm" t-value="cim_lines[0].prix_tonne if cim_lines else 0"/>
+                        <t t-set="sum_htva_cm" t-value="sum(cim_prod_lines.mapped('montant_htva'))"/>
+                        <t t-set="sum_ret_cm" t-value="sum(cim_prod_lines.mapped('retenue_5'))"/>
+                        <t t-set="sum_net_cm" t-value="sum(cim_prod_lines.mapped('total_net'))"/>
+                        <t t-set="sum_poids_net_cm" t-value="sum(cim_prod_lines.mapped('poids_net'))"/>
+                        <t t-set="sum_poids_tonne_cm" t-value="sum(cim_prod_lines.mapped('poids_net_tonne'))"/>
+                        <t t-set="prix_ref_cm" t-value="cim_prod_lines[0].prix_tonne if cim_prod_lines else 0"/>
                         <style type="text/css">
                             .sobto-cmaf-table thead { display: table-header-group; }
                             .sobto-cmaf-table tfoot { display: table-footer-group; }
@@ -167,28 +169,37 @@
                             </thead>
                             <tbody>
                                 <t t-foreach="cim_lines" t-as="cl">
-                                    <tr>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="cl.num_ordre"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="cl.camion_id.name if cl.camion_id else ''"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;">
-                                            <t t-if="cl.product_type == 'tuff'">TUFF</t>
-                                            <t t-elif="cl.product_type == 'gasoil'">GASOIL</t>
-                                            <t t-elif="cl.product_type == 'super'">SUPER</t>
-                                            <t t-elif="cl.product_type == 'petrole'">P&#201;TROLE</t>
-                                        </td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="cl.ticket_pesee_bf or ''"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;">
-                                            <t t-if="cl.date_sortie"><t t-out="cl.date_sortie.strftime('%d/%m/%Y')"/></t>
-                                        </td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.poids_1ere or 0).replace(',', ' ')"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.poids_2eme or 0).replace(',', ' ')"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.poids_net or 0).replace(',', ' ')"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="('{:.2f}'.format(cl.poids_net_tonne or 0)).replace('.', ',')"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.prix_tonne or 0).replace(',', ' ')"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.montant_htva or 0).replace(',', ' ')"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.retenue_5 or 0).replace(',', ' ')"/></td>
-                                        <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;"><t t-out="'{:,.0f}'.format(cl.total_net or 0).replace(',', ' ')"/></td>
-                                    </tr>
+                                    <t t-if="cl.display_type == 'line_section'">
+                                        <tr>
+                                            <td colspan="13" style="border:1px solid #555;padding:6px 8px;text-align:left;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="cl.name or ''"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-else="">
+                                        <tr>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="cl.num_ordre if cl.num_ordre else ''"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="cl.camion_id.name if cl.camion_id else ''"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;">
+                                                <t t-if="cl.product_type == 'tuff'">TUFF</t>
+                                                <t t-elif="cl.product_type == 'gasoil'">GASOIL</t>
+                                                <t t-elif="cl.product_type == 'super'">SUPER</t>
+                                                <t t-elif="cl.product_type == 'petrole'">P&#201;TROLE</t>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="cl.ticket_pesee_bf or ''"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;">
+                                                <t t-if="cl.date_sortie"><t t-out="cl.date_sortie.strftime('%d/%m/%Y')"/></t>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.poids_1ere or 0).replace(',', ' ')"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.poids_2eme or 0).replace(',', ' ')"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.poids_net or 0).replace(',', ' ')"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="('{:.2f}'.format(cl.poids_net_tonne or 0)).replace('.', ',')"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.prix_tonne or 0).replace(',', ' ')"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.montant_htva or 0).replace(',', ' ')"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;"><t t-out="'{:,.0f}'.format(cl.retenue_5 or 0).replace(',', ' ')"/></td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;"><t t-out="'{:,.0f}'.format(cl.total_net or 0).replace(',', ' ')"/></td>
+                                        </tr>
+                                    </t>
                                 </t>
                             </tbody>
                             <tfoot>

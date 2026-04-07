@@ -19,6 +19,7 @@
                         <field name="x_cmaf_attachment_1" placeholder="Ligne 1"/>
                         <field name="x_cmaf_attachment_2" placeholder="Ligne 2"/>
                         <field name="x_cmaf_attachment_3" placeholder="Ligne 3"/>
+                        <field name="x_cmaf_attachment_4" placeholder="Ligne 4"/>
                     </group>
                 </group>
             </xpath>
@@ -32,16 +33,15 @@
                 </group>
             </xpath>
 
-            <!-- Lignes facture standard masquées en mode Transport (xpath limité à l'onglet facture pour éviter ambiguïtés) -->
+            <!-- Lignes facture standard masquées en mode Transport / CIMAF (onglet Facture) -->
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="attributes">
                 <attribute name="invisible">x_invoice_type in ('transport', 'cmaf')</attribute>
             </xpath>
 
-            <!-- Onglet lignes transport -->
-            <xpath expr="//notebook" position="inside">
-                <page string="Lignes transport" name="sobto_transport_lines"
-                      invisible="x_invoice_type != 'transport'">
-                    <field name="transport_line_ids" nolabel="1"
+            <!-- Lignes transport & CIMAF sur le même onglet « Facture » que le transit (pas d’onglet séparé) -->
+            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="after">
+                <group invisible="x_invoice_type != 'transport'" colspan="2" string="Lignes transport">
+                    <field name="transport_line_ids" nolabel="1" colspan="2"
                            context="{'default_move_id': id}">
                         <list editable="bottom">
                             <field name="date_bl"/>
@@ -61,25 +61,28 @@
                         <field name="amount_tva_transport" readonly="1"/>
                         <field name="amount_ttc_transport" readonly="1"/>
                     </group>
-                </page>
-                <page string="Lignes CIMAF" name="sobto_cmaf_lines"
-                      invisible="x_invoice_type != 'cmaf'">
-                    <field name="cmaf_line_ids" nolabel="1"
+                </group>
+                <group invisible="x_invoice_type != 'cmaf'" colspan="2" string="Lignes CIMAF">
+                    <field name="cmaf_line_ids" nolabel="1" colspan="2"
                            context="{'default_move_id': id}">
                         <list editable="bottom">
-                            <field name="num_ordre"/>
-                            <field name="camion_id"/>
-                            <field name="product_type"/>
-                            <field name="ticket_pesee_bf"/>
-                            <field name="date_sortie"/>
-                            <field name="poids_1ere"/>
-                            <field name="poids_2eme"/>
-                            <field name="poids_net" readonly="1"/>
-                            <field name="poids_net_tonne" readonly="1"/>
-                            <field name="prix_tonne"/>
-                            <field name="montant_htva" readonly="1"/>
-                            <field name="retenue_5" readonly="1"/>
-                            <field name="total_net" readonly="1"/>
+                            <field name="sequence" widget="handle"/>
+                            <field name="display_type"/>
+                            <field name="name" string="Intitulé section" placeholder="Libellé affiché sur le PDF"
+                                   invisible="display_type == 'product'"/>
+                            <field name="num_ordre" invisible="display_type == 'line_section'"/>
+                            <field name="camion_id" invisible="display_type == 'line_section'"/>
+                            <field name="product_type" invisible="display_type == 'line_section'"/>
+                            <field name="ticket_pesee_bf" invisible="display_type == 'line_section'"/>
+                            <field name="date_sortie" invisible="display_type == 'line_section'"/>
+                            <field name="poids_1ere" invisible="display_type == 'line_section'"/>
+                            <field name="poids_2eme" invisible="display_type == 'line_section'"/>
+                            <field name="poids_net" readonly="1" invisible="display_type == 'line_section'"/>
+                            <field name="poids_net_tonne" readonly="1" invisible="display_type == 'line_section'"/>
+                            <field name="prix_tonne" invisible="display_type == 'line_section'"/>
+                            <field name="montant_htva" readonly="1" invisible="display_type == 'line_section'"/>
+                            <field name="retenue_5" readonly="1" invisible="display_type == 'line_section'"/>
+                            <field name="total_net" readonly="1" invisible="display_type == 'line_section'"/>
                         </list>
                     </field>
                     <group class="oe_subtotal_footer oe_right" colspan="2">
@@ -87,7 +90,14 @@
                         <field name="amount_tva_cmaf" readonly="1"/>
                         <field name="amount_ttc_cmaf" readonly="1"/>
                     </group>
-                </page>
+                </group>
+                <group string="Arrêté"
+                       invisible="x_invoice_type in ('transport', 'cmaf') or not x_montant_lettres">
+                    <field name="x_montant_lettres"
+                           string="Arrêtée la présente facture à la somme de"
+                           readonly="1"
+                           colspan="2"/>
+                </group>
             </xpath>
 
             <!-- Colonnes BL / BE / Camion avant la description produit (Transit) -->
@@ -111,17 +121,6 @@
             </xpath>
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="before">
                 <field name="x_montant_ligne" string="Montant" class="text-center"/>
-            </xpath>
-
-            <!-- Montant en lettres après les lignes de facture -->
-            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="after">
-                <group string="Arrêté">
-                    <field name="x_montant_lettres"
-                           string="Arrêtée la présente facture à la somme de"
-                           readonly="1"
-                           colspan="2"
-                           invisible="not x_montant_lettres"/>
-                </group>
             </xpath>
 
         </field>

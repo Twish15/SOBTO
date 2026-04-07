@@ -14,6 +14,19 @@ class CmafInvoiceLine(models.Model):
     _order = 'sequence, id'
 
     sequence = fields.Integer(default=10)
+    display_type = fields.Selection(
+        [
+            ('product', 'Ligne'),
+            ('line_section', 'Section'),
+        ],
+        string='Type de ligne',
+        default='product',
+        required=True,
+    )
+    name = fields.Char(
+        string='Intitulé section',
+        help='Texte affiché sur le PDF pour une ligne de type Section.',
+    )
     move_id = fields.Many2one(
         'account.move',
         string='Facture',
@@ -83,16 +96,25 @@ class CmafInvoiceLine(models.Model):
         readonly=True,
     )
 
-    @api.depends('poids_1ere', 'poids_2eme')
+    @api.depends('poids_1ere', 'poids_2eme', 'display_type')
     def _compute_weights(self):
         for line in self:
+            if line.display_type == 'line_section':
+                line.poids_net = 0.0
+                line.poids_net_tonne = 0.0
+                continue
             pn = (line.poids_1ere or 0.0) - (line.poids_2eme or 0.0)
             line.poids_net = pn
             line.poids_net_tonne = pn / 1000.0 if pn else 0.0
 
-    @api.depends('poids_net_tonne', 'prix_tonne')
+    @api.depends('poids_net_tonne', 'prix_tonne', 'display_type')
     def _compute_amounts(self):
         for line in self:
+            if line.display_type == 'line_section':
+                line.montant_htva = 0.0
+                line.retenue_5 = 0.0
+                line.total_net = 0.0
+                continue
             htva = (line.poids_net_tonne or 0.0) * (line.prix_tonne or 0.0)
             line.montant_htva = htva
             line.retenue_5 = htva * 0.05
@@ -118,16 +140,21 @@ class CmafInvoiceLine(models.Model):
             raise UserError(_('Produit de transport manquant (données module).')) from e
 
     def _assign_num_ordre_on_create(self, vals_list):
-        """Numérotation 1, 2, 3… par facture ; prochain libre à chaque nouvelle ligne."""
+        """Numérotation 1, 2, 3… par facture (lignes produit uniquement)."""
         by_move = defaultdict(list)
         for i, vals in enumerate(vals_list):
+            if vals.get('display_type', 'product') == 'line_section':
+                vals_list[i]['num_ordre'] = 0
+                continue
             mid = vals.get('move_id')
             if isinstance(mid, (list, tuple)):
                 mid = mid[0] if mid else None
             if mid:
                 by_move[mid].append(i)
         for move_id, indices in by_move.items():
-            existing = self.search([('move_id', '=', move_id)]).mapped('num_ordre')
+            existing = self.search(
+                [('move_id', '=', move_id), ('display_type', '=', 'product')]
+            ).mapped('num_ordre')
             max_ord = max(existing) if existing else 0
             for idx in indices:
                 max_ord += 1
@@ -140,16 +167,34 @@ class CmafInvoiceLine(models.Model):
         lines._after_cmaf_change()
         return lines
 
+    def _renumber_cmaf_product_orders(self):
+        for move in self.mapped('move_id'):
+            products = move.cmaf_line_ids.filtered(
+                lambda l: l.display_type == 'product'
+            ).sorted(lambda l: (l.sequence, l.id))
+            for i, line in enumerate(products, start=1):
+                if line.num_ordre != i:
+                    line.with_context(skip_cmaf_after=True).write({'num_ordre': i})
+
     def write(self, vals):
-        res = super().write(vals)
+        if self.env.context.get('skip_cmaf_after'):
+            return super().write(vals)
+        vals_to_write = dict(vals)
+        if vals_to_write.get('display_type') == 'line_section':
+            vals_to_write['num_ordre'] = 0
+        res = super().write(vals_to_write)
+        if 'display_type' in vals_to_write:
+            self._renumber_cmaf_product_orders()
         self._after_cmaf_change()
         return res
 
     def unlink(self):
         moves = self.mapped('move_id')
         res = super().unlink()
+        Line = self.env['cmaf.invoice.line']
         for move in moves:
             if move.x_invoice_type == 'cmaf' and move.state == 'draft':
+                Line.search([('move_id', '=', move.id)])._renumber_cmaf_product_orders()
                 move._sync_invoice_lines_from_cmaf()
         return res
 
