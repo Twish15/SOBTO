@@ -33,13 +33,11 @@
                 </group>
             </xpath>
 
-            <!-- Lignes facture standard masquées en mode Transport / CIMAF (onglet Facture) -->
-            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="attributes">
-                <attribute name="invisible">x_invoice_type in ('transport', 'cmaf')</attribute>
-            </xpath>
+            <!-- Lignes transit : masquage via groupe dans account_move_invoice_line_transit_wrap.xml
+                 (le widget product_label_section_and_note_field_o2m ignore invisible sur le champ). -->
 
-            <!-- Lignes transport & CIMAF sur le même onglet « Facture » que le transit (pas d’onglet séparé) -->
-            <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']" position="after">
+            <!-- Lignes transport & CIMAF : après le bloc transit (hors du groupe masqué) -->
+            <xpath expr="//group[@name='sobto_transit_invoice_lines']" position="after">
                 <group invisible="x_invoice_type != 'transport'" colspan="2" string="Lignes transport">
                     <field name="transport_line_ids" nolabel="1" colspan="2"
                            context="{'default_move_id': id}">
