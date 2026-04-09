@@ -6,7 +6,22 @@ from odoo.exceptions import UserError
 class TransportInvoiceLine(models.Model):
     _name = 'transport.invoice.line'
     _description = 'Ligne facture transport'
-    _order = 'id'
+    _order = 'sequence, id'
+
+    sequence = fields.Integer(default=10)
+    display_type = fields.Selection(
+        [
+            ('product', 'Ligne'),
+            ('line_section', 'Section'),
+        ],
+        string='Type de ligne',
+        default='product',
+        required=True,
+    )
+    name = fields.Char(
+        string='Intitule section',
+        help='Texte affiche sur le PDF pour une ligne de type Section.',
+    )
 
     move_id = fields.Many2one(
         'account.move',
@@ -47,13 +62,18 @@ class TransportInvoiceLine(models.Model):
         readonly=True,
     )
 
-    @api.depends('taux', 'quantity')
+    @api.depends('taux', 'quantity', 'display_type')
     def _compute_montant(self):
         for line in self:
+            if line.display_type == 'line_section':
+                line.montant = 0.0
+                continue
             line.montant = (line.taux or 0.0) * (line.quantity or 0.0)
 
     def _get_product_for_sync(self):
         self.ensure_one()
+        if self.display_type == 'line_section':
+            return False
         if not self.product_type:
             raise UserError(_('Sélectionnez un type de produit (Gasoil, Super ou Pétrole) sur chaque ligne transport.'))
         xml_id = {

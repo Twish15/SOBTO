@@ -42,16 +42,25 @@
                     <field name="transport_line_ids" nolabel="1" colspan="2"
                            context="{'default_move_id': id}">
                         <list editable="bottom">
-                            <field name="date_bl"/>
-                            <field name="bl_number"/>
-                            <field name="date_be"/>
-                            <field name="be_number"/>
-                            <field name="camion_id"/>
-                            <field name="quantity"/>
-                            <field name="product_type"/>
-                            <field name="parcours_id"/>
-                            <field name="taux"/>
-                            <field name="montant" sum="Montant HT"/>
+                            <control>
+                                <create name="add_transport_line_control" string="Ajouter une ligne"/>
+                                <create name="add_transport_section_control" string="Ajouter une section"
+                                        context="{'default_display_type': 'line_section'}"/>
+                            </control>
+                            <field name="sequence" widget="handle"/>
+                            <field name="display_type"/>
+                            <field name="name" string="Intitulé section" placeholder="Libellé affiché sur le PDF"
+                                   invisible="display_type == 'product'"/>
+                            <field name="date_bl" invisible="display_type == 'line_section'"/>
+                            <field name="bl_number" invisible="display_type == 'line_section'"/>
+                            <field name="date_be" invisible="display_type == 'line_section'"/>
+                            <field name="be_number" invisible="display_type == 'line_section'"/>
+                            <field name="camion_id" invisible="display_type == 'line_section'"/>
+                            <field name="quantity" invisible="display_type == 'line_section'"/>
+                            <field name="product_type" invisible="display_type == 'line_section'"/>
+                            <field name="parcours_id" invisible="display_type == 'line_section'"/>
+                            <field name="taux" invisible="display_type == 'line_section'"/>
+                            <field name="montant" sum="Montant HT" readonly="1" invisible="display_type == 'line_section'"/>
                         </list>
                     </field>
                     <group class="oe_subtotal_footer oe_right" colspan="2">
@@ -64,6 +73,11 @@
                     <field name="cmaf_line_ids" nolabel="1" colspan="2"
                            context="{'default_move_id': id}">
                         <list editable="bottom">
+                            <control>
+                                <create name="add_cmaf_line_control" string="Ajouter une ligne"/>
+                                <create name="add_cmaf_section_control" string="Ajouter une section"
+                                        context="{'default_display_type': 'line_section'}"/>
+                            </control>
                             <field name="sequence" widget="handle"/>
                             <field name="display_type"/>
                             <field name="name" string="Intitulé section" placeholder="Libellé affiché sur le PDF"
@@ -111,6 +125,8 @@
             <!-- Parcours (liste) avant le prix unitaire -->
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_unit']" position="before">
                 <field name="x_parcours_id" optional="show" string="Parcours"/>
+                <field name="x_total_ddu" optional="show" string="Total DDU"/>
+                <field name="x_rs" optional="show" string="RS"/>
             </xpath>
 
             <!-- Montant HT saisissable ; masquer le sous-total standard ; contenu centré -->
@@ -118,7 +134,7 @@
                 <attribute name="column_invisible">True</attribute>
             </xpath>
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="before">
-                <field name="x_montant_ligne" string="Montant" class="text-center"/>
+                <field name="x_montant_ligne" string="Montant" class="text-center" readonly="1"/>
             </xpath>
 
         </field>

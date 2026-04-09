@@ -85,32 +85,41 @@
                             </thead>
                             <tbody>
                                 <t t-foreach="tr_lines" t-as="tline">
-                                    <tr style="background-color:#ffffff;">
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                            <t t-if="tline.date_bl"><t t-out="tline.date_bl.strftime('%d/%m/%Y')"/><br/></t>
-                                            <t t-out="tline.bl_number or ''"/>
-                                        </td>
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                            <t t-if="tline.date_be"><t t-out="tline.date_be.strftime('%d/%m/%Y')"/><br/></t>
-                                            <t t-out="tline.be_number or ''"/>
-                                        </td>
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="tline.camion_id.name if tline.camion_id else ''"/></td>
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                            <t t-out="'{:,.0f}'.format(tline.quantity).replace(',', ' ')"/> litres
-                                        </td>
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                            <t t-if="tline.product_type == 'gasoil'">GASOIL</t>
-                                            <t t-elif="tline.product_type == 'super'">SUPER</t>
-                                            <t t-elif="tline.product_type == 'petrole'">P&#201;TROLE</t>
-                                        </td>
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="tline.parcours_id.name if tline.parcours_id else ''"/></td>
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                            <t t-out="('{:.3f}'.format(tline.taux or 0)).rstrip('0').rstrip('.').replace('.', ',')"/>
-                                        </td>
-                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                            <t t-out="'{:,.0f}'.format(tline.montant).replace(',', ' ')"/>
-                                        </td>
-                                    </tr>
+                                    <t t-if="tline.display_type == 'line_section'">
+                                        <tr>
+                                            <td colspan="8" style="border:1px solid #555;padding:8px 10px;text-align:left;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="tline.name or ''"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-else="">
+                                        <tr style="background-color:#ffffff;">
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                                <t t-if="tline.date_bl"><t t-out="tline.date_bl.strftime('%d/%m/%Y')"/><br/></t>
+                                                <t t-out="tline.bl_number or ''"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                                <t t-if="tline.date_be"><t t-out="tline.date_be.strftime('%d/%m/%Y')"/><br/></t>
+                                                <t t-out="tline.be_number or ''"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="tline.camion_id.name if tline.camion_id else ''"/></td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                                <t t-out="'{:,.0f}'.format(tline.quantity or 0).replace(',', ' ')"/> litres
+                                            </td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                                <t t-if="tline.product_type == 'gasoil'">GASOIL</t>
+                                                <t t-elif="tline.product_type == 'super'">SUPER</t>
+                                                <t t-elif="tline.product_type == 'petrole'">P&#201;TROLE</t>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="tline.parcours_id.name if tline.parcours_id else ''"/></td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                                <t t-out="('{:.3f}'.format(tline.taux or 0)).rstrip('0').rstrip('.').replace('.', ',')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                                <t t-out="'{:,.0f}'.format(tline.montant or 0).replace(',', ' ')"/>
+                                            </td>
+                                        </tr>
+                                    </t>
                                 </t>
                             </tbody>
                             <tfoot>
@@ -240,7 +249,9 @@
                     <t t-set="show_be" t-value="any(l.x_date_be or l.x_numero_be for l in product_lines)"/>
                     <t t-set="show_camion" t-value="any(l.x_camion_id or l.x_numero_camion for l in product_lines)"/>
                     <t t-set="show_parcours" t-value="any(l.x_parcours_id or l.x_parcours for l in product_lines)"/>
-                    <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0)"/>
+                    <t t-set="show_ddu" t-value="any(l.x_total_ddu for l in product_lines)"/>
+                    <t t-set="show_rs" t-value="any(l.x_rs for l in product_lines)"/>
+                    <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0) + (1 if show_ddu else 0) + (1 if show_rs else 0)"/>
 
                     <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
                         <thead>
@@ -251,6 +262,8 @@
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:11%;">Quantit&#233;s<br/>(litres)</th>
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:8%;">Produit</th>
                                 <th t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:18%;">Parcours</th>
+                                <th t-if="show_ddu" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:12%;">Total DDU</th>
+                                <th t-if="show_rs" style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:10%;">RS</th>
                                 <th style="border:1px solid #555;padding:8px 5px;text-align:center;font-weight:bold;background-color:#ffffff;vertical-align:middle;width:14%;">Montant</th>
                             </tr>
                         </thead>
@@ -271,8 +284,10 @@
                                     </td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.product_id.name or line.name or ''"/></td>
                                     <td t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_parcours_id.name if line.x_parcours_id else (line.x_parcours or '')"/></td>
+                                    <td t-if="show_ddu" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(line.x_total_ddu or 0).replace(',', ' ')"/></td>
+                                    <td t-if="show_rs" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(line.x_rs or 0).replace(',', ' ')"/></td>
                                     <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                        <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
+                                        <t t-out="'{:,.0f}'.format(line.x_montant_ligne or line.price_subtotal).replace(',', ' ')"/>
                                     </td>
                                 </tr>
                             </t>
@@ -321,7 +336,7 @@
                     <!-- Signature : légèrement à droite (noms + images) -->
                     <div style="margin-top:35px;font-family:Arial,Helvetica,sans-serif;text-align:right;padding-right:10%;padding-left:25%;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
-                        <div style="margin-top:110px;font-weight:bold;">Yaya OUATTARA</div>
+                        <div style="margin-top:72px;font-weight:bold;">Yaya OUATTARA</div>
                         <div t-if="o.company_id.x_invoice_signature or o.company_id.x_invoice_stamp" style="margin-top:22px;">
                             <table style="margin-left:auto;border-collapse:separate;border-spacing:16px 0;">
                                 <tr>

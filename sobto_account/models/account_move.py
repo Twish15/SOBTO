@@ -15,8 +15,8 @@ MOIS_FR = [
 
 # Libellés d'objet par défaut (modifiables sur la facture)
 DEFAULT_X_OBJET_BY_TYPE = {
-    'transit': 'FRAIS DE TRANSIT (CODE  ******)',
-    'transport': "TRANSPORT D'HYDROCARBURES (CODE  ******)",
+    'transit': 'FRAIS DE TRANSIT (CODE 404697)',
+    'transport': "TRANSPORT D'HYDROCARBURES (CODE 404697)",
     'cmaf': 'TRANSPORT DE TUFF (HOLY MOUNTAIN - OUAGADOUGOU)',
 }
 
@@ -194,7 +194,7 @@ class AccountMove(models.Model):
             if move.move_type not in ('out_invoice', 'out_refund'):
                 continue
             move.invoice_line_ids.filtered(
-                lambda l: l.display_type == 'product'
+                lambda l: l.display_type in ('product', 'line_section', 'line_note')
             ).unlink()
             if not move.transport_line_ids:
                 continue
@@ -205,6 +205,19 @@ class AccountMove(models.Model):
                 tax_cmd = [(5, 0, 0)]
             line_cmds = []
             for tl in move.transport_line_ids:
+                if tl.display_type == 'line_section':
+                    line_cmds.append(
+                        (
+                            0,
+                            0,
+                            {
+                                'sequence': tl.sequence,
+                                'display_type': 'line_section',
+                                'name': tl.name or ' ',
+                            },
+                        )
+                    )
+                    continue
                 product = tl._get_product_for_sync()
                 name = product.display_name
                 if tl.parcours_id:
@@ -214,6 +227,7 @@ class AccountMove(models.Model):
                         0,
                         0,
                         {
+                            'sequence': tl.sequence,
                             'product_id': product.id,
                             'product_uom_id': product.uom_id.id,
                             'name': name,

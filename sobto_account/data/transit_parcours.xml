@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="sobto_parcours_cotonou_kara_cinkance_peni" model="sobto.parcours">
+        <field name="name">COTONOU- KARA- CINKANCE-PENI</field>
+    </record>
+    <record id="sobto_parcours_tema_bingo" model="sobto.parcours">
+        <field name="name">TEMA-BINGO</field>
+    </record>
+    <record id="sobto_parcours_cotonou_kara_cinkance_bingo" model="sobto.parcours">
+        <field name="name">COTONOU-KARA -CINKANCE BINGO</field>
+    </record>
+    <record id="sobto_parcours_ghana_peni" model="sobto.parcours">
+        <field name="name">GHANA-PENI</field>
+    </record>
+    <record id="sobto_parcours_tema_peni" model="sobto.parcours">
+        <field name="name">TEMA-PENI</field>
+    </record>
+</odoo>

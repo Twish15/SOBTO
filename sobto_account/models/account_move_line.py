@@ -40,12 +40,46 @@ class AccountMoveLine(models.Model):
         string='Parcours (ancien)',
         help='Conservé pour migration ; utiliser le champ Parcours (liste).',
     )
+    x_total_ddu = fields.Monetary(
+        string='Total DDU',
+        currency_field='currency_id',
+        help='Montant DDU saisi pour la ligne Transit.',
+    )
+    x_rs = fields.Monetary(
+        string='RS',
+        currency_field='currency_id',
+        help='Montant RS saisi pour la ligne Transit.',
+    )
 
-    @api.depends('price_subtotal')
+    def _get_transit_formula_amount(self):
+        self.ensure_one()
+        return (self.x_total_ddu or 0.0) - ((self.x_rs or 0.0) + 25000.0)
+
+    def _apply_transit_formula_price(self):
+        for line in self:
+            move = line.move_id
+            if (
+                not move
+                or move.x_invoice_type != 'transit'
+                or line.display_type in ('line_section', 'line_note')
+            ):
+                continue
+            qty = line.quantity or 0.0
+            factor = 1.0 - (line.discount or 0.0) / 100.0
+            if not qty or not factor:
+                continue
+            target = line._get_transit_formula_amount()
+            line.with_context(skip_transit_formula_sync=True).price_unit = (
+                target / (qty * factor)
+            )
+
+    @api.depends('price_subtotal', 'x_total_ddu', 'x_rs', 'move_id.x_invoice_type')
     def _compute_x_montant_ligne(self):
         for line in self:
             if line.display_type in ('line_section', 'line_note'):
                 line.x_montant_ligne = False
+            elif line.move_id.x_invoice_type == 'transit':
+                line.x_montant_ligne = line._get_transit_formula_amount()
             else:
                 line.x_montant_ligne = line.price_subtotal
 
@@ -53,11 +87,19 @@ class AccountMoveLine(models.Model):
         for line in self:
             if line.display_type in ('line_section', 'line_note'):
                 continue
+            if line.move_id.x_invoice_type == 'transit':
+                line.x_total_ddu = (line.x_montant_ligne or 0.0) + (line.x_rs or 0.0) + 25000.0
+                line._apply_transit_formula_price()
+                continue
             qty = line.quantity or 0.0
             factor = 1.0 - (line.discount or 0.0) / 100.0
             if not qty or not factor:
                 continue
             line.price_unit = line.x_montant_ligne / (qty * factor)
+
+    @api.onchange('x_total_ddu', 'x_rs', 'quantity', 'discount')
+    def _onchange_transit_formula_fields(self):
+        self._apply_transit_formula_price()
 
     @api.model
     def _default_uom_litres(self):
@@ -160,6 +202,7 @@ class AccountMoveLine(models.Model):
                 if uom:
                     vals['product_uom_id'] = uom.id
         lines = super().create(vals_list)
+        lines._apply_transit_formula_price()
         for line in lines:
             move = line.move_id
             if (
@@ -171,3 +214,11 @@ class AccountMoveLine(models.Model):
             ):
                 line.write({'tax_ids': [(5, 0, 0)]})
         return lines
+
+    def write(self, vals):
+        res = super().write(vals)
+        if self.env.context.get('skip_transit_formula_sync'):
+            return res
+        if {'x_total_ddu', 'x_rs', 'quantity', 'discount'} & set(vals):
+            self._apply_transit_formula_price()
+        return res
