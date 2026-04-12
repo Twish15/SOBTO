@@ -298,9 +298,9 @@ class AccountMove(models.Model):
             move.write({'invoice_line_ids': line_cmds})
 
     def _sobto_apply_taxes_on_transit_lines(self):
-        """Applique ou retire les taxes sur les lignes produit (Transit, brouillon)."""
+        """Transit et Facture simple : applique ou retire les taxes sur les lignes produit (brouillon)."""
         for move in self:
-            if move.x_invoice_type != 'transit':
+            if move.x_invoice_type not in ('transit', 'simple'):
                 continue
             if move.state != 'draft':
                 continue
@@ -348,11 +348,12 @@ class AccountMove(models.Model):
             k in vals
             for k in ('x_apply_tva', 'x_invoice_type', 'invoice_line_ids')
         ):
-            to_transit = self.filtered(
-                lambda m: m.state == 'draft' and m.x_invoice_type == 'transit'
+            to_std_lines = self.filtered(
+                lambda m: m.state == 'draft'
+                and m.x_invoice_type in ('transit', 'simple')
             )
-            if to_transit:
-                to_transit._sobto_apply_taxes_on_transit_lines()
+            if to_std_lines:
+                to_std_lines._sobto_apply_taxes_on_transit_lines()
         return res
 
     @api.model_create_multi
@@ -367,7 +368,7 @@ class AccountMove(models.Model):
                 move._sync_invoice_lines_from_transport()
             if move.x_invoice_type == 'cmaf' and move.state == 'draft':
                 move._sync_invoice_lines_from_cmaf()
-            if move.x_invoice_type == 'transit' and move.state == 'draft':
+            if move.x_invoice_type in ('transit', 'simple') and move.state == 'draft':
                 move._sobto_apply_taxes_on_transit_lines()
         return moves
 

@@ -211,7 +211,7 @@ class AccountMoveLine(models.Model):
             move = line.move_id
             if (
                 move.state == 'draft'
-                and move.x_invoice_type == 'transit'
+                and move.x_invoice_type in ('transit', 'simple')
                 and not move.x_apply_tva
                 and line.display_type == 'product'
                 and move.move_type in ('out_invoice', 'out_refund')

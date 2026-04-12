@@ -241,8 +241,90 @@
                         </table>
                     </t>
 
+                    <!-- Facture simple : lignes Odoo standard (description, qté, PU, taxes si TVA, montant) -->
+                    <t t-if="o.x_invoice_type == 'simple'">
+                        <t t-set="simp_lines" t-value="o.invoice_line_ids"/>
+                        <t t-set="simp_tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
+                        <table style="border:1px solid #888;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
+                            <thead>
+                                <tr>
+                                    <th style="border:1px solid #888;padding:8px 6px;text-align:left;font-weight:bold;color:#fff;background-color:#556d7a;vertical-align:middle;width:36%;">Description</th>
+                                    <th style="border:1px solid #888;padding:8px 6px;text-align:right;font-weight:bold;color:#fff;background-color:#556d7a;vertical-align:middle;width:14%;">Quantit&#233;</th>
+                                    <th style="border:1px solid #888;padding:8px 6px;text-align:right;font-weight:bold;color:#fff;background-color:#556d7a;vertical-align:middle;width:14%;">Prix unitaire</th>
+                                    <th t-if="o.x_apply_tva" style="border:1px solid #888;padding:8px 6px;text-align:left;font-weight:bold;color:#fff;background-color:#556d7a;vertical-align:middle;width:18%;">Taxes</th>
+                                    <th style="border:1px solid #888;padding:8px 6px;text-align:right;font-weight:bold;color:#fff;background-color:#556d7a;vertical-align:middle;width:18%;">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="simp_lines" t-as="sline">
+                                    <t t-if="sline.display_type == 'line_section'">
+                                        <tr>
+                                            <td t-att-colspan="5 if o.x_apply_tva else 4" style="border:1px solid #888;padding:8px 10px;text-align:left;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="sline.name or ''"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-elif="sline.display_type == 'line_note'">
+                                        <tr>
+                                            <td t-att-colspan="5 if o.x_apply_tva else 4" style="border:1px solid #888;padding:6px 10px;text-align:left;vertical-align:middle;font-style:italic;color:#444;">
+                                                <t t-out="sline.name or ''"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-else="">
+                                        <tr style="background-color:#ffffff;">
+                                            <td style="border:1px solid #888;padding:8px 6px;text-align:left;vertical-align:top;">
+                                                <t t-out="sline.name or ''"/>
+                                            </td>
+                                            <td style="border:1px solid #888;padding:8px 6px;text-align:right;vertical-align:middle;white-space:nowrap;">
+                                                <span t-field="sline.quantity" t-options='{"widget": "float", "precision": 2}'/>
+                                                <t t-if="sline.product_uom_id"> <t t-out="sline.product_uom_id.name"/></t>
+                                            </td>
+                                            <td style="border:1px solid #888;padding:8px 6px;text-align:right;vertical-align:middle;white-space:nowrap;">
+                                                <span t-field="sline.price_unit" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td t-if="o.x_apply_tva" style="border:1px solid #888;padding:8px 6px;text-align:left;vertical-align:middle;">
+                                                <t t-foreach="sline.tax_ids" t-as="tax_line">
+                                                    <t t-out="tax_line.name"/><t t-if="not tax_line_last">, </t>
+                                                </t>
+                                            </td>
+                                            <td style="border:1px solid #888;padding:8px 6px;text-align:right;vertical-align:middle;white-space:nowrap;">
+                                                <t t-out="'{:,.0f}'.format(sline.price_subtotal).replace(',', ' ')"/> CFA
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <t t-set="simp_label_span" t-value="4 if o.x_apply_tva else 3"/>
+                                <t t-if="o.x_apply_tva">
+                                    <tr style="background-color:#ffffff;">
+                                        <td t-att-colspan="simp_label_span" style="border:1px solid #888;padding:8px 6px;text-align:left;font-weight:bold;vertical-align:middle;">Montant Total HT</td>
+                                        <td style="border:1px solid #888;padding:8px 6px;text-align:right;font-weight:bold;vertical-align:middle;">
+                                            <t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/> CFA
+                                        </td>
+                                    </tr>
+                                    <t t-foreach="simp_tax_lines" t-as="stl">
+                                        <tr style="background-color:#ffffff;">
+                                            <td t-att-colspan="simp_label_span" style="border:1px solid #888;padding:8px 6px;text-align:left;font-weight:bold;vertical-align:middle;"><t t-out="stl.name"/></td>
+                                            <td style="border:1px solid #888;padding:8px 6px;text-align:right;vertical-align:middle;">
+                                                <t t-out="'{:,.0f}'.format(abs(stl.balance)).replace(',', ' ')"/> CFA
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <tr style="background-color:#ffffff;">
+                                    <td t-att-colspan="simp_label_span" style="border:1px solid #888;padding:8px 6px;text-align:left;font-weight:bold;vertical-align:middle;color:#b00020;">Total</td>
+                                    <td style="border:1px solid #888;padding:8px 6px;text-align:right;font-weight:bold;vertical-align:middle;color:#b00020;">
+                                        <t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/> CFA
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </t>
+
                     <!-- Tableau Transit : colonnes masquées si aucune ligne n'a de donnée -->
-                    <t t-if="o.x_invoice_type not in ('transport', 'cmaf')">
+                    <t t-if="o.x_invoice_type == 'transit'">
                     <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
                     <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
                     <t t-set="show_bl" t-value="any(l.x_date_bl or l.x_numero_bl for l in product_lines)"/>
