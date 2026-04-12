@@ -13,11 +13,11 @@
                     </div>
                 </div>
 
-                <!-- ══ CONTENU ══ (Facture simple : texte centré) -->
-                <div class="article" t-att-style="'margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.45;color:#000;' + (' text-align:center;' if o.x_invoice_type == 'simple' else '')">
+                <!-- ══ CONTENU ══ -->
+                <div class="article" style="margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.45;color:#000;">
 
-                    <!-- Ville et date : à droite ; Facture simple : centré -->
-                    <div t-att-style="'margin-bottom:8px;margin-top:0;padding-top:0;font-size:13px;color:#333;font-family:Arial,Helvetica,sans-serif;text-align:' + ('center' if o.x_invoice_type == 'simple' else 'right') + ';'">
+                    <!-- Ville et date : aligné à droite -->
+                    <div style="text-align:right;margin-bottom:8px;margin-top:0;padding-top:0;font-size:13px;color:#333;font-family:Arial,Helvetica,sans-serif;">
                         <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
                         <t t-out="o.x_invoice_date_fr"/>
                     </div>
@@ -50,8 +50,8 @@
                     </div>
                     </t>
 
-                    <!-- DOIT : à gauche ; Facture simple : centré -->
-                    <div t-att-style="'margin-bottom:10px;font-size:13px;padding-left:0;text-align:' + ('center' if o.x_invoice_type == 'simple' else 'left') + ';'">
+                    <!-- DOIT : une seule marge gauche pour toutes les lignes -->
+                    <div style="margin-bottom:10px;font-size:13px;text-align:left;padding-left:0;">
                         <div><strong>DOIT : <t t-out="o.partner_id.name"/></strong></div>
                         <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
                         <t t-if="o.partner_id.x_rccm"><div>N&#176; RCCM: <t t-out="o.partner_id.x_rccm"/></div></t>
@@ -68,6 +68,7 @@
                     <!-- Tableau facture Transport (8 colonnes + Taux) -->
                     <t t-if="o.x_invoice_type == 'transport'">
                         <t t-set="tr_lines" t-value="o.transport_line_ids"/>
+                        <t t-set="tr_section_totals" t-value="o._get_sobto_pdf_section_subtotals()"/>
                         <t t-set="colspan_tr" t-value="7"/>
                         <t t-set="tax_lines_tr" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
                         <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
@@ -87,8 +88,11 @@
                                 <t t-foreach="tr_lines" t-as="tline">
                                     <t t-if="tline.display_type == 'line_section'">
                                         <tr>
-                                            <td colspan="8" style="border:1px solid #555;padding:8px 10px;text-align:left;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                            <td t-att-colspan="colspan_tr" style="border:1px solid #555;padding:8px 10px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
                                                 <t t-out="tline.name or ''"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(tr_section_totals.get(tline.id, 0) or 0).replace(',', ' ')"/>
                                             </td>
                                         </tr>
                                     </t>
@@ -145,6 +149,7 @@
 
                     <!-- Tableau CIMAF (pesée / tonne / retenue 5 %) — tout centré, en-tête répété en impression -->
                     <t t-if="o.x_invoice_type == 'cmaf'">
+                        <t t-set="cim_section_totals" t-value="o._get_sobto_pdf_section_subtotals()"/>
                         <t t-set="cim_lines" t-value="o.cmaf_line_ids"/>
                         <t t-set="cim_prod_lines" t-value="cim_lines.filtered(lambda l: l.display_type == 'product')"/>
                         <t t-set="tax_lines_cm" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
@@ -180,8 +185,11 @@
                                 <t t-foreach="cim_lines" t-as="cl">
                                     <t t-if="cl.display_type == 'line_section'">
                                         <tr>
-                                            <td colspan="13" style="border:1px solid #555;padding:6px 8px;text-align:left;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                            <td colspan="12" style="border:1px solid #555;padding:6px 8px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
                                                 <t t-out="cl.name or ''"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:6px 4px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(cim_section_totals.get(cl.id, 0) or 0).replace(',', ' ')"/>
                                             </td>
                                         </tr>
                                     </t>
@@ -241,11 +249,13 @@
                         </table>
                     </t>
 
-                    <!-- Facture simple : lignes Odoo standard (même style en-tête que Transit/Transport : fond blanc) -->
+                    <!-- Facture simple : lignes Odoo standard (même style en-tête que Transit/Transport : fond blanc) ; tableau centré uniquement ici -->
                     <t t-if="o.x_invoice_type == 'simple'">
-                        <t t-set="simp_lines" t-value="o.invoice_line_ids"/>
+                        <t t-set="simp_lines" t-value="o._get_sobto_invoice_lines_ordered()"/>
+                        <t t-set="simp_section_totals" t-value="o._get_sobto_pdf_section_subtotals()"/>
                         <t t-set="simp_tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
-                        <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:13px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
+                        <t t-set="simp_ncols_label" t-value="4 if o.x_apply_tva else 3"/>
+                        <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:13px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;text-align:center;">
                             <thead>
                                 <tr style="font-size:16px;font-family:Arial,Helvetica,sans-serif;">
                                     <th style="border:1px solid #555;padding:9px 6px;text-align:center;font-weight:bold;background-color:#ffffff;color:#000;vertical-align:middle;width:36%;">Description</th>
@@ -259,8 +269,11 @@
                                 <t t-foreach="simp_lines" t-as="sline">
                                     <t t-if="sline.display_type == 'line_section'">
                                         <tr>
-                                            <td t-att-colspan="5 if o.x_apply_tva else 4" style="border:1px solid #555;padding:8px 10px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                            <td t-att-colspan="simp_ncols_label" style="border:1px solid #555;padding:8px 10px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
                                                 <t t-out="sline.name or ''"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:8px 6px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(simp_section_totals.get(sline.id, 0) or 0).replace(',', ' ')"/> CFA
                                             </td>
                                         </tr>
                                     </t>
@@ -296,17 +309,16 @@
                                 </t>
                             </tbody>
                             <tfoot>
-                                <t t-set="simp_label_span" t-value="4 if o.x_apply_tva else 3"/>
                                 <t t-if="o.x_apply_tva">
                                     <tr style="background-color:#ffffff;">
-                                        <td t-att-colspan="simp_label_span" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;">Montant Total HT</td>
+                                        <td t-att-colspan="simp_ncols_label" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;">Montant Total HT</td>
                                         <td style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;">
                                             <t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/> CFA
                                         </td>
                                     </tr>
                                     <t t-foreach="simp_tax_lines" t-as="stl">
                                         <tr style="background-color:#ffffff;">
-                                            <td t-att-colspan="simp_label_span" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;"><t t-out="stl.name"/></td>
+                                            <td t-att-colspan="simp_ncols_label" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;"><t t-out="stl.name"/></td>
                                             <td style="border:1px solid #555;padding:8px 6px;text-align:center;vertical-align:middle;">
                                                 <t t-out="'{:,.0f}'.format(abs(stl.balance)).replace(',', ' ')"/> CFA
                                             </td>
@@ -314,7 +326,7 @@
                                     </t>
                                 </t>
                                 <tr style="background-color:#ffffff;">
-                                    <td t-att-colspan="simp_label_span" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;color:#b00020;">Total</td>
+                                    <td t-att-colspan="simp_ncols_label" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;color:#b00020;">Total</td>
                                     <td style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;color:#b00020;">
                                         <t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/> CFA
                                     </td>
@@ -323,9 +335,11 @@
                         </table>
                     </t>
 
-                    <!-- Tableau Transit : colonnes masquées si aucune ligne n'a de donnée -->
+                    <!-- Tableau Transit : colonnes masquées si aucune ligne n'a de donnée ; toutes les lignes (section / note / produit) dans l'ordre -->
                     <t t-if="o.x_invoice_type == 'transit'">
                     <t t-set="product_lines" t-value="o.invoice_line_ids.filtered(lambda l: l.display_type not in ('line_section','line_note'))"/>
+                    <t t-set="inv_all_lines" t-value="o._get_sobto_invoice_lines_ordered()"/>
+                    <t t-set="tr_inv_section_totals" t-value="o._get_sobto_pdf_section_subtotals()"/>
                     <t t-set="tax_lines" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
                     <t t-set="show_bl" t-value="any(l.x_date_bl or l.x_numero_bl for l in product_lines)"/>
                     <t t-set="show_be" t-value="any(l.x_date_be or l.x_numero_be for l in product_lines)"/>
@@ -334,6 +348,7 @@
                     <t t-set="show_ddu" t-value="any(l.x_total_ddu for l in product_lines)"/>
                     <t t-set="show_rs" t-value="any(l.x_rs for l in product_lines)"/>
                     <t t-set="colspan_foot" t-value="(1 if show_bl else 0) + (1 if show_be else 0) + (1 if show_camion else 0) + 1 + 1 + (1 if show_parcours else 0) + (1 if show_ddu else 0) + (1 if show_rs else 0)"/>
+                    <t t-set="transit_ncols" t-value="colspan_foot + 1"/>
 
                     <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;">
                         <thead>
@@ -350,28 +365,47 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <t t-foreach="product_lines" t-as="line">
-                                <tr style="background-color:#ffffff;">
-                                    <td t-if="show_bl" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                        <t t-if="line.x_date_bl"><t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/></t>
-                                        <t t-out="line.x_numero_bl or ''"/>
-                                    </td>
-                                    <td t-if="show_be" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                        <t t-if="line.x_date_be"><t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/></t>
-                                        <t t-out="line.x_numero_be or ''"/>
-                                    </td>
-                                    <td t-if="show_camion" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="(line.x_camion_id.name or line.x_numero_camion) or ''"/></td>
-                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                        <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/> litres
-                                    </td>
-                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.product_id.name or line.name or ''"/></td>
-                                    <td t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_parcours_id.name if line.x_parcours_id else (line.x_parcours or '')"/></td>
-                                    <td t-if="show_ddu" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(line.x_total_ddu or 0).replace(',', ' ')"/></td>
-                                    <td t-if="show_rs" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(line.x_rs or 0).replace(',', ' ')"/></td>
-                                    <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
-                                        <t t-out="'{:,.0f}'.format(line.x_montant_ligne or line.price_subtotal).replace(',', ' ')"/>
-                                    </td>
-                                </tr>
+                            <t t-foreach="inv_all_lines" t-as="line">
+                                <t t-if="line.display_type == 'line_section'">
+                                    <tr>
+                                        <td t-att-colspan="colspan_foot" style="border:1px solid #555;padding:8px 10px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                            <t t-out="line.name or ''"/>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                            <t t-out="'{:,.0f}'.format(tr_inv_section_totals.get(line.id, 0) or 0).replace(',', ' ')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-elif="line.display_type == 'line_note'">
+                                    <tr>
+                                        <td t-att-colspan="transit_ncols" style="border:1px solid #555;padding:6px 10px;text-align:center;vertical-align:middle;font-style:italic;color:#444;background-color:#ffffff;">
+                                            <t t-out="line.name or ''"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <tr style="background-color:#ffffff;">
+                                        <td t-if="show_bl" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-if="line.x_date_bl"><t t-out="line.x_date_bl.strftime('%d/%m/%Y')"/><br/></t>
+                                            <t t-out="line.x_numero_bl or ''"/>
+                                        </td>
+                                        <td t-if="show_be" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-if="line.x_date_be"><t t-out="line.x_date_be.strftime('%d/%m/%Y')"/><br/></t>
+                                            <t t-out="line.x_numero_be or ''"/>
+                                        </td>
+                                        <td t-if="show_camion" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="(line.x_camion_id.name or line.x_numero_camion) or ''"/></td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-out="'{:,.0f}'.format(line.quantity).replace(',', ' ')"/> litres
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.product_id.name or line.name or ''"/></td>
+                                        <td t-if="show_parcours" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="line.x_parcours_id.name if line.x_parcours_id else (line.x_parcours or '')"/></td>
+                                        <td t-if="show_ddu" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(line.x_total_ddu or 0).replace(',', ' ')"/></td>
+                                        <td t-if="show_rs" style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;"><t t-out="'{:,.0f}'.format(line.x_rs or 0).replace(',', ' ')"/></td>
+                                        <td style="border:1px solid #555;padding:8px 5px;text-align:center;vertical-align:middle;background-color:#ffffff;">
+                                            <t t-out="'{:,.0f}'.format(line.x_montant_ligne or line.price_subtotal).replace(',', ' ')"/>
+                                        </td>
+                                    </tr>
+                                </t>
                             </t>
                         </tbody>
                         <tfoot>
@@ -396,7 +430,7 @@
                     </t>
 
                     <!-- Montant lettres (Transit / Transport : pas CIMAF) -->
-                    <div t-if="o.x_montant_lettres and o.x_invoice_type != 'cmaf'" t-att-style="'margin-top:28px;font-size:13px;font-family:Arial,Helvetica,sans-serif;' + ('text-align:center;' if o.x_invoice_type == 'simple' else '')">
+                    <div t-if="o.x_montant_lettres and o.x_invoice_type != 'cmaf'" style="margin-top:28px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">
                         Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
                         <strong t-out="o.x_montant_lettres"/>
                     </div>
@@ -415,17 +449,17 @@
                         </div>
                     </div>
 
-                    <!-- Signature : à droite (Facture simple : centré) -->
-                    <div t-att-style="'margin-top:35px;font-family:Arial,Helvetica,sans-serif;' + ('text-align:center;padding-left:10%;padding-right:10%;' if o.x_invoice_type == 'simple' else 'text-align:right;padding-right:10%;padding-left:25%;')">
+                    <!-- Signature : légèrement à droite (noms + images) -->
+                    <div style="margin-top:35px;font-family:Arial,Helvetica,sans-serif;text-align:right;padding-right:10%;padding-left:25%;">
                         <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
                         <div style="margin-top:72px;font-weight:bold;">Yaya OUATTARA</div>
                         <div t-if="o.company_id.x_invoice_signature or o.company_id.x_invoice_stamp" style="margin-top:22px;">
-                            <table t-att-style="'border-collapse:separate;border-spacing:16px 0;' + ('margin-left:auto;margin-right:auto;' if o.x_invoice_type == 'simple' else 'margin-left:auto;')">
+                            <table style="margin-left:auto;border-collapse:separate;border-spacing:16px 0;">
                                 <tr>
-                                    <td t-if="o.company_id.x_invoice_signature" t-att-style="'vertical-align:bottom;padding:0;' + ('text-align:center;' if o.x_invoice_type == 'simple' else 'text-align:right;')">
+                                    <td t-if="o.company_id.x_invoice_signature" style="text-align:right;vertical-align:bottom;padding:0;">
                                         <img t-attf-src="/web/image/res.company/#{o.company_id.id}/x_invoice_signature" style="max-height:100px;max-width:240px;" alt=""/>
                                     </td>
-                                    <td t-if="o.company_id.x_invoice_stamp" t-att-style="'vertical-align:bottom;padding:0;' + ('text-align:center;' if o.x_invoice_type == 'simple' else 'text-align:right;')">
+                                    <td t-if="o.company_id.x_invoice_stamp" style="text-align:right;vertical-align:bottom;padding:0;">
                                         <img t-attf-src="/web/image/res.company/#{o.company_id.id}/x_invoice_stamp" style="max-height:100px;max-width:240px;" alt=""/>
                                     </td>
                                 </tr>

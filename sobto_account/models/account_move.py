@@ -461,6 +461,82 @@ class AccountMove(models.Model):
 
         return where_string, param
 
+    def _get_sobto_invoice_lines_ordered(self):
+        """Lignes de facture dans l'ordre d'affichage (PDF / sections)."""
+        self.ensure_one()
+        return self.invoice_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
+
+    def _get_sobto_pdf_section_subtotals(self):
+        """Sous-totaux par ligne de section pour le PDF (clé = id de la ligne section)."""
+        self.ensure_one()
+        if self.x_invoice_type == 'transport':
+            return self._sobto_pdf_section_subtotals_transport()
+        if self.x_invoice_type == 'cmaf':
+            return self._sobto_pdf_section_subtotals_cmaf()
+        if self.x_invoice_type in ('transit', 'simple'):
+            return self._sobto_pdf_section_subtotals_invoice_lines()
+        return {}
+
+    def _sobto_pdf_section_subtotals_invoice_lines(self):
+        mapping = {}
+        lines = self._get_sobto_invoice_lines_ordered()
+        i, n = 0, len(lines)
+        while i < n:
+            line = lines[i]
+            if line.display_type != 'line_section':
+                i += 1
+                continue
+            sec = line
+            i += 1
+            total = 0.0
+            while i < n and lines[i].display_type != 'line_section':
+                pl = lines[i]
+                if pl.display_type == 'product':
+                    total += pl.x_montant_ligne or pl.price_subtotal or 0.0
+                i += 1
+            mapping[sec.id] = total
+        return mapping
+
+    def _sobto_pdf_section_subtotals_transport(self):
+        mapping = {}
+        lines = self.transport_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
+        i, n = 0, len(lines)
+        while i < n:
+            line = lines[i]
+            if line.display_type != 'line_section':
+                i += 1
+                continue
+            sec = line
+            i += 1
+            total = 0.0
+            while i < n and lines[i].display_type != 'line_section':
+                pl = lines[i]
+                if pl.display_type == 'product':
+                    total += pl.montant or 0.0
+                i += 1
+            mapping[sec.id] = total
+        return mapping
+
+    def _sobto_pdf_section_subtotals_cmaf(self):
+        mapping = {}
+        lines = self.cmaf_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
+        i, n = 0, len(lines)
+        while i < n:
+            line = lines[i]
+            if line.display_type != 'line_section':
+                i += 1
+                continue
+            sec = line
+            i += 1
+            total = 0.0
+            while i < n and lines[i].display_type != 'line_section':
+                pl = lines[i]
+                if pl.display_type == 'product':
+                    total += pl.total_net or 0.0
+                i += 1
+            mapping[sec.id] = total
+        return mapping
+
     def _get_name_invoice_report(self):
         """Utilise le template SOBTO pour les factures et avoirs clients."""
         if self.move_type in ('out_invoice', 'out_refund'):
