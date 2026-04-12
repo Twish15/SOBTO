@@ -161,16 +161,19 @@ class AccountMoveLine(models.Model):
             move = self.env['account.move'].browse(move_id)
             move_type = move.move_type
         if move_type in ('out_invoice', 'out_refund'):
-            if fields_list is None or 'quantity' in fields_list:
-                qty = res.get('quantity')
-                if qty in (False, None) or qty == 0:
-                    res['quantity'] = DEFAULT_QTY_LITRES
-            if (fields_list is None or 'product_uom_id' in fields_list) and not res.get(
-                'product_uom_id'
-            ):
-                uom = self._default_uom_litres()
-                if uom:
-                    res['product_uom_id'] = uom.id
+            move = self.env['account.move'].browse(move_id) if move_id else None
+            transit_invoice = move and move.x_invoice_type == 'transit'
+            if transit_invoice:
+                if fields_list is None or 'quantity' in fields_list:
+                    qty = res.get('quantity')
+                    if qty in (False, None) or qty == 0:
+                        res['quantity'] = DEFAULT_QTY_LITRES
+                if (fields_list is None or 'product_uom_id' in fields_list) and not res.get(
+                    'product_uom_id'
+                ):
+                    uom = self._default_uom_litres()
+                    if uom:
+                        res['product_uom_id'] = uom.id
             load_camion = fields_list is None or 'x_camion_id' in fields_list
             if load_camion and move_id and not res.get('x_camion_id'):
                 move = self.env['account.move'].browse(move_id)
@@ -195,12 +198,13 @@ class AccountMoveLine(models.Model):
             move = self.env['account.move'].browse(move_id)
             if move.move_type not in ('out_invoice', 'out_refund'):
                 continue
-            if not vals.get('quantity'):
-                vals['quantity'] = DEFAULT_QTY_LITRES
-            if not vals.get('product_uom_id'):
-                uom = self._default_uom_litres()
-                if uom:
-                    vals['product_uom_id'] = uom.id
+            if move.x_invoice_type == 'transit':
+                if not vals.get('quantity'):
+                    vals['quantity'] = DEFAULT_QTY_LITRES
+                if not vals.get('product_uom_id'):
+                    uom = self._default_uom_litres()
+                    if uom:
+                        vals['product_uom_id'] = uom.id
         lines = super().create(vals_list)
         lines._apply_transit_formula_price()
         for line in lines:

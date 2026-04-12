@@ -18,6 +18,7 @@ DEFAULT_X_OBJET_BY_TYPE = {
     'transit': 'FRAIS DE TRANSIT (CODE 404697)',
     'transport': "TRANSPORT D'HYDROCARBURES (CODE 404697)",
     'cmaf': 'TRANSPORT DE TUFF (HOLY MOUNTAIN - OUAGADOUGOU)',
+    'simple': 'FACTURATION (CODE 404697)',
 }
 
 
@@ -27,6 +28,7 @@ class AccountMove(models.Model):
     x_invoice_type = fields.Selection(
         [
             ('transit', 'Transit'),
+            ('simple', 'Facture simple'),
             ('transport', 'Transport'),
             ('cmaf', 'CIMAF'),
         ],

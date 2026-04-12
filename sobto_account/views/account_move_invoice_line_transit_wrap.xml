@@ -9,7 +9,7 @@
             <xpath expr="//page[@id='invoice_tab']/field[@name='invoice_line_ids']" position="replace">
                 <group name="sobto_transit_invoice_lines"
                        colspan="2"
-                       string="Lignes facture (Transit)"
+                       string="Lignes de facture"
                        invisible="x_invoice_type in ('transport', 'cmaf')">
 <field name="invoice_line_ids"
                            nolabel="1"
@@ -26,10 +26,10 @@
                                        }" readonly="state != 'draft'">
                                     <list editable="bottom" string="Journal Items" default_order="sequence, id">
                                         <control>
-                                            <create name="add_line_control" string="Add a line"/>
-                                            <create name="add_section_control" string="Add a section" context="{'default_display_type': 'line_section'}"/>
-                                            <create name="add_note_control" string="Add a note" context="{'default_display_type': 'line_note'}"/>
-                                            <button name="action_add_from_catalog" string="Catalog" type="object" class="btn-link" context="{'order_id': parent.id}"/>
+                                            <create name="add_line_control" string="Ajouter une ligne"/>
+                                            <create name="add_section_control" string="Ajouter une section" context="{'default_display_type': 'line_section'}"/>
+                                            <create name="add_note_control" string="Ajouter une note" context="{'default_display_type': 'line_note'}"/>
+                                            <button name="action_add_from_catalog" string="Catalogue" type="object" class="btn-link" context="{'order_id': parent.id}"/>
                                         </control>
 
                                         <!-- Displayed fields -->
@@ -43,12 +43,6 @@
                                                     or [('purchase_ok', '=', True)]
                                                "/>
                                         <field name="name" widget="section_and_note_text" optional="show"/>
-                                        <field name="account_id"
-                                               context="{'partner_id': partner_id, 'move_type': parent.move_type}"
-                                               groups="account.group_account_readonly"
-                                               options="{'no_quick_create': True}"
-                                               domain="[('deprecated', '=', False), ('company_ids', 'parent_of', company_id), ('account_type', 'not in', ('asset_receivable', 'liability_payable', 'off_balance'))]"
-                                               required="display_type not in ('line_note', 'line_section')"/>
                                         <field name="analytic_distribution" widget="analytic_distribution"
                                                string="Analytic"
                                                groups="analytic.group_analytic_accounting"
@@ -152,7 +146,6 @@
                                                 <field name="discount" string="Disc.%"/>
                                             </group>
                                             <group>
-                                                <field name="account_id" domain="[('deprecated', '=', False), ('company_ids', 'parent_of', company_id)]" options="{'no_create': True}" context="{'partner_id': partner_id, 'move_type': parent.move_type}"/>
                                                 <field name="tax_ids" widget="many2many_tags"
                                                     domain="[('type_tax_use', '=?', parent.invoice_filter_type_domain), ('company_id', 'parent_of', parent.company_id), ('country_id', '=', parent.tax_country_id)]"
                                                     context="{'append_type_to_tax_name': not parent.invoice_filter_type_domain, 'active_test': True}"

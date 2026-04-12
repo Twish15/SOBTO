@@ -33,6 +33,8 @@
                 </group>
             </xpath>
 
+            <!-- Compte : retiré dans account_move_invoice_line_transit_wrap.xml (liste + formulaire mobile) -->
+
             <!-- Lignes transit : masquage via groupe dans account_move_invoice_line_transit_wrap.xml
                  (le widget product_label_section_and_note_field_o2m ignore invisible sur le champ). -->
 
@@ -48,9 +50,8 @@
                                         context="{'default_display_type': 'line_section'}"/>
                             </control>
                             <field name="sequence" widget="handle"/>
-                            <field name="display_type"/>
-                            <field name="name" string="Intitulé section" placeholder="Libellé affiché sur le PDF"
-                                   invisible="display_type == 'product'"/>
+                            <field name="display_type" column_invisible="True" force_save="1"/>
+                            <field name="name" string="Intitulé section" column_invisible="True" force_save="1"/>
                             <field name="date_bl" invisible="display_type == 'line_section'"/>
                             <field name="bl_number" invisible="display_type == 'line_section'"/>
                             <field name="date_be" invisible="display_type == 'line_section'"/>
@@ -79,11 +80,11 @@
                                         context="{'default_display_type': 'line_section'}"/>
                             </control>
                             <field name="sequence" widget="handle"/>
-                            <field name="display_type"/>
-                            <field name="name" string="Intitulé section" placeholder="Libellé affiché sur le PDF"
-                                   invisible="display_type == 'product'"/>
+                            <field name="display_type" column_invisible="True" force_save="1"/>
+                            <field name="name" string="Intitulé section" column_invisible="True" force_save="1"/>
                             <field name="num_ordre" invisible="display_type == 'line_section'"/>
-                            <field name="camion_id" invisible="display_type == 'line_section'"/>
+                            <field name="camion_id" invisible="display_type == 'line_section'"
+                                   required="display_type == 'product'"/>
                             <field name="product_type" invisible="display_type == 'line_section'"/>
                             <field name="ticket_pesee_bf" invisible="display_type == 'line_section'"/>
                             <field name="date_sortie" invisible="display_type == 'line_section'"/>
@@ -112,29 +113,31 @@
                 </group>
             </xpath>
 
-            <!-- Colonnes BL / BE / Camion avant la description produit (Transit) -->
+            <!-- Colonnes BL / BE / Camion (Transit uniquement ; masquées sur Facture simple) -->
             <xpath expr="//field[@name='invoice_line_ids']//list/field[@name='product_id']" position="before">
-                <field name="x_date_bl"    optional="show" string="Date B.L"/>
-                <field name="x_numero_bl"  optional="show" string="N° B.L"/>
-                <field name="x_date_be"    optional="show" string="Date B.E"/>
-                <field name="x_numero_be"  optional="show" string="N° B.E"/>
+                <field name="x_date_bl"    optional="show" string="Date B.L" column_invisible="parent.x_invoice_type == 'simple'"/>
+                <field name="x_numero_bl"  optional="show" string="N° B.L" column_invisible="parent.x_invoice_type == 'simple'"/>
+                <field name="x_date_be"    optional="show" string="Date B.E" column_invisible="parent.x_invoice_type == 'simple'"/>
+                <field name="x_numero_be"  optional="show" string="N° B.E" column_invisible="parent.x_invoice_type == 'simple'"/>
                 <field name="x_camion_id" optional="show" string="Camion"
-                       options="{'no_create': False, 'no_create_edit': False}"/>
+                       options="{'no_create': False, 'no_create_edit': False}"
+                       column_invisible="parent.x_invoice_type == 'simple'"/>
             </xpath>
 
-            <!-- Parcours (liste) avant le prix unitaire -->
+            <!-- Parcours / DDU / RS (Transit uniquement) -->
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_unit']" position="before">
-                <field name="x_parcours_id" optional="show" string="Parcours"/>
-                <field name="x_total_ddu" optional="show" string="Total DDU"/>
-                <field name="x_rs" optional="show" string="RS"/>
+                <field name="x_parcours_id" optional="show" string="Parcours" column_invisible="parent.x_invoice_type == 'simple'"/>
+                <field name="x_total_ddu" optional="show" string="Total DDU" column_invisible="parent.x_invoice_type == 'simple'"/>
+                <field name="x_rs" optional="show" string="RS" column_invisible="parent.x_invoice_type == 'simple'"/>
             </xpath>
 
-            <!-- Montant HT saisissable ; masquer le sous-total standard ; contenu centré -->
+            <!-- Transit : Montant SOBTO à la place du sous-total ; Facture simple : même règles que Odoo (HT / TTC) -->
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="attributes">
-                <attribute name="column_invisible">True</attribute>
+                <attribute name="column_invisible">parent.x_invoice_type == 'transit' or (parent.move_type not in ('in_invoice', 'in_refund', 'in_receipt') and parent.company_price_include == 'tax_included')</attribute>
             </xpath>
             <xpath expr="//page[@id='invoice_tab']//field[@name='invoice_line_ids']//list/field[@name='price_subtotal']" position="before">
-                <field name="x_montant_ligne" string="Montant" class="text-center" readonly="1"/>
+                <field name="x_montant_ligne" string="Montant" class="text-center" readonly="1"
+                       column_invisible="parent.x_invoice_type != 'transit'"/>
             </xpath>
 
         </field>

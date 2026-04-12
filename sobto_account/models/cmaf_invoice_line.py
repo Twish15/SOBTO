@@ -96,6 +96,12 @@ class CmafInvoiceLine(models.Model):
         readonly=True,
     )
 
+    @api.constrains('camion_id', 'display_type')
+    def _check_cmaf_camion_required(self):
+        for line in self:
+            if line.display_type == 'product' and not line.camion_id:
+                raise UserError(_('Le camion est obligatoire sur chaque ligne CIMAF.'))
+
     @api.depends('poids_1ere', 'poids_2eme', 'display_type')
     def _compute_weights(self):
         for line in self:
