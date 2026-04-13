@@ -518,6 +518,7 @@ class AccountMove(models.Model):
         return mapping
 
     def _sobto_pdf_section_subtotals_cmaf(self):
+        """PDF CIMAF : sous-total par section = somme des Total Net des lignes produit du bloc."""
         mapping = {}
         lines = self.cmaf_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
         i, n = 0, len(lines)
@@ -528,13 +529,13 @@ class AccountMove(models.Model):
                 continue
             sec = line
             i += 1
-            total = 0.0
+            total_net_sum = 0.0
             while i < n and lines[i].display_type != 'line_section':
                 pl = lines[i]
                 if pl.display_type == 'product':
-                    total += pl.total_net or 0.0
+                    total_net_sum += float(pl.total_net or 0.0)
                 i += 1
-            mapping[sec.id] = total
+            mapping[sec.id] = total_net_sum
         return mapping
 
     def _get_name_invoice_report(self):
