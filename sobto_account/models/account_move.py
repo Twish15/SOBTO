@@ -467,7 +467,11 @@ class AccountMove(models.Model):
         return self.invoice_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
 
     def _get_sobto_pdf_section_subtotals(self):
-        """Sous-totaux par ligne de section pour le PDF (clé = id de la ligne section)."""
+        """Sous-totaux par ligne de section pour le PDF (clé = id de la ligne section).
+
+        Chaque section affiche la somme des lignes *produit* situées **au-dessus** de cette
+        section (depuis le début ou depuis la section précédente), pas celles du dessous.
+        """
         self.ensure_one()
         if self.x_invoice_type == 'transport':
             return self._sobto_pdf_section_subtotals_transport()
@@ -479,63 +483,53 @@ class AccountMove(models.Model):
 
     def _sobto_pdf_section_subtotals_invoice_lines(self):
         mapping = {}
-        lines = self._get_sobto_invoice_lines_ordered()
-        i, n = 0, len(lines)
-        while i < n:
-            line = lines[i]
+        lines_list = list(self._get_sobto_invoice_lines_ordered())
+        prev_section_index = -1
+        for i, line in enumerate(lines_list):
             if line.display_type != 'line_section':
-                i += 1
                 continue
-            sec = line
-            i += 1
             total = 0.0
-            while i < n and lines[i].display_type != 'line_section':
-                pl = lines[i]
+            for j in range(prev_section_index + 1, i):
+                pl = lines_list[j]
                 if pl.display_type == 'product':
                     total += pl.x_montant_ligne or pl.price_subtotal or 0.0
-                i += 1
-            mapping[sec.id] = total
+            mapping[line.id] = total
+            prev_section_index = i
         return mapping
 
     def _sobto_pdf_section_subtotals_transport(self):
         mapping = {}
-        lines = self.transport_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
-        i, n = 0, len(lines)
-        while i < n:
-            line = lines[i]
+        lines_list = list(
+            self.transport_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
+        )
+        prev_section_index = -1
+        for i, line in enumerate(lines_list):
             if line.display_type != 'line_section':
-                i += 1
                 continue
-            sec = line
-            i += 1
             total = 0.0
-            while i < n and lines[i].display_type != 'line_section':
-                pl = lines[i]
+            for j in range(prev_section_index + 1, i):
+                pl = lines_list[j]
                 if pl.display_type == 'product':
                     total += pl.montant or 0.0
-                i += 1
-            mapping[sec.id] = total
+            mapping[line.id] = total
+            prev_section_index = i
         return mapping
 
     def _sobto_pdf_section_subtotals_cmaf(self):
-        """PDF CIMAF : sous-total par section = somme des Total Net des lignes produit du bloc."""
+        """PDF CIMAF : sous-total = somme des Total Net des lignes produit *au-dessus* de la section."""
         mapping = {}
-        lines = self.cmaf_line_ids.sorted(lambda l: (l.sequence or 0, l.id))
-        i, n = 0, len(lines)
-        while i < n:
-            line = lines[i]
+        lines_list = list(self.cmaf_line_ids.sorted(lambda l: (l.sequence or 0, l.id)))
+        prev_section_index = -1
+        for i, line in enumerate(lines_list):
             if line.display_type != 'line_section':
-                i += 1
                 continue
-            sec = line
-            i += 1
             total_net_sum = 0.0
-            while i < n and lines[i].display_type != 'line_section':
-                pl = lines[i]
+            for j in range(prev_section_index + 1, i):
+                pl = lines_list[j]
                 if pl.display_type == 'product':
                     total_net_sum += float(pl.total_net or 0.0)
-                i += 1
-            mapping[sec.id] = total_net_sum
+            mapping[line.id] = total_net_sum
+            prev_section_index = i
         return mapping
 
     def _get_name_invoice_report(self):
