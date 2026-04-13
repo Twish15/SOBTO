@@ -51,7 +51,10 @@
                             </control>
                             <field name="sequence" widget="handle"/>
                             <field name="display_type" column_invisible="True" force_save="1"/>
-                            <field name="name" string="Intitulé section" column_invisible="True" force_save="1"/>
+                            <field name="name" string="Titre / description"
+                                   required="display_type == 'line_section'"
+                                   invisible="display_type == 'product'"
+                                   placeholder="Titre de la section"/>
                             <field name="date_bl" invisible="display_type == 'line_section'"/>
                             <field name="bl_number" invisible="display_type == 'line_section'"/>
                             <field name="date_be" invisible="display_type == 'line_section'"/>
@@ -81,7 +84,10 @@
                             </control>
                             <field name="sequence" widget="handle"/>
                             <field name="display_type" column_invisible="True" force_save="1"/>
-                            <field name="name" string="Intitulé section" column_invisible="True" force_save="1"/>
+                            <field name="name" string="Titre / description"
+                                   required="display_type == 'line_section'"
+                                   invisible="display_type == 'product'"
+                                   placeholder="Titre de la section"/>
                             <field name="num_ordre" invisible="display_type == 'line_section'"/>
                             <field name="camion_id" invisible="display_type == 'line_section'"
                                    required="display_type == 'product'"/>

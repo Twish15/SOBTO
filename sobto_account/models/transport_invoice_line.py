@@ -19,8 +19,8 @@ class TransportInvoiceLine(models.Model):
         required=True,
     )
     name = fields.Char(
-        string='Intitule section',
-        help='Texte affiche sur le PDF pour une ligne de type Section.',
+        string='Titre / description',
+        help='Obligatoire pour une section : titre ou texte affiché sur le PDF.',
     )
 
     move_id = fields.Many2one(
@@ -87,6 +87,12 @@ class TransportInvoiceLine(models.Model):
             return self.env.ref(xml_id)
         except ValueError as e:
             raise UserError(_('Produit de transport manquant (données module).')) from e
+
+    @api.constrains('name', 'display_type')
+    def _check_section_title(self):
+        for line in self:
+            if line.display_type == 'line_section' and not (line.name or '').strip():
+                raise UserError(_('Saisissez un titre ou une description pour chaque section.'))
 
     @api.model_create_multi
     def create(self, vals_list):

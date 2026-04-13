@@ -42,7 +42,7 @@
                                                     and [('sale_ok', '=', True)]
                                                     or [('purchase_ok', '=', True)]
                                                "/>
-                                        <field name="name" widget="section_and_note_text" optional="show"/>
+                                        <field name="name" widget="section_and_note_text" string="Titre / description"/>
                                         <field name="analytic_distribution" widget="analytic_distribution"
                                                string="Analytic"
                                                groups="analytic.group_analytic_accounting"

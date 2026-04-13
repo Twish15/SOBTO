@@ -24,8 +24,8 @@ class CmafInvoiceLine(models.Model):
         required=True,
     )
     name = fields.Char(
-        string='Intitulé section',
-        help='Texte affiché sur le PDF pour une ligne de type Section.',
+        string='Titre / description',
+        help='Obligatoire pour une section : titre ou texte affiché sur le PDF.',
     )
     move_id = fields.Many2one(
         'account.move',
@@ -101,6 +101,12 @@ class CmafInvoiceLine(models.Model):
         for line in self:
             if line.display_type == 'product' and not line.camion_id:
                 raise UserError(_('Le camion est obligatoire sur chaque ligne CIMAF.'))
+
+    @api.constrains('name', 'display_type')
+    def _check_section_title(self):
+        for line in self:
+            if line.display_type == 'line_section' and not (line.name or '').strip():
+                raise UserError(_('Saisissez un titre ou une description pour chaque section.'))
 
     @api.depends('poids_1ere', 'poids_2eme', 'display_type')
     def _compute_weights(self):
