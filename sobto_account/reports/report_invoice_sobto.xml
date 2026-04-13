@@ -149,7 +149,7 @@
 
                     <!-- Tableau CIMAF (pesée / tonne / retenue 5 %) — tout centré, en-tête répété en impression -->
                     <t t-if="o.x_invoice_type == 'cmaf'">
-                        <t t-set="cim_section_totals" t-value="o._get_sobto_pdf_section_subtotals()"/>
+                        <t t-set="cim_sec_agg" t-value="o._get_sobto_pdf_cmaf_section_aggregates()"/>
                         <t t-set="cim_lines" t-value="o.cmaf_line_ids"/>
                         <t t-set="cim_prod_lines" t-value="cim_lines.filtered(lambda l: l.display_type == 'product')"/>
                         <t t-set="tax_lines_cm" t-value="o.line_ids.filtered(lambda l: l.tax_line_id)"/>
@@ -184,12 +184,34 @@
                             <tbody>
                                 <t t-foreach="cim_lines" t-as="cl">
                                     <t t-if="cl.display_type == 'line_section'">
+                                        <t t-set="S" t-value="cim_sec_agg.get(cl.id) or {}"/>
                                         <tr>
-                                            <td colspan="12" style="border:1px solid #555;padding:6px 8px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                            <td colspan="5" style="border:1px solid #555;padding:6px 8px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
                                                 <t t-out="cl.name or ''"/>
                                             </td>
-                                            <td style="border:1px solid #555;padding:6px 4px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
-                                                <t t-out="'{:,.0f}'.format(cim_section_totals.get(cl.id, 0) or 0).replace(',', ' ')"/>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(S.get('poids_1ere', 0) or 0).replace(',', ' ')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(S.get('poids_2eme', 0) or 0).replace(',', ' ')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(S.get('poids_net', 0) or 0).replace(',', ' ')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="('{:.2f}'.format(S.get('poids_net_tonne', 0) or 0)).replace('.', ',')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(S.get('prix_tonne', 0) or 0).replace(',', ' ')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(S.get('montant_htva', 0) or 0).replace(',', ' ')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(S.get('retenue_5', 0) or 0).replace(',', ' ')"/>
+                                            </td>
+                                            <td style="border:1px solid #555;padding:4px 2px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                                <t t-out="'{:,.0f}'.format(S.get('total_net', 0) or 0).replace(',', ' ')"/>
                                             </td>
                                         </tr>
                                     </t>

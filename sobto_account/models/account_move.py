@@ -476,7 +476,7 @@ class AccountMove(models.Model):
         if self.x_invoice_type == 'transport':
             return self._sobto_pdf_section_subtotals_transport()
         if self.x_invoice_type == 'cmaf':
-            return self._sobto_pdf_section_subtotals_cmaf()
+            return {}
         if self.x_invoice_type in ('transit', 'simple'):
             return self._sobto_pdf_section_subtotals_invoice_lines()
         return {}
@@ -515,20 +515,47 @@ class AccountMove(models.Model):
             prev_section_index = i
         return mapping
 
-    def _sobto_pdf_section_subtotals_cmaf(self):
-        """PDF CIMAF : sous-total = somme des Total Net des lignes produit *au-dessus* de la section."""
+    def _get_sobto_pdf_cmaf_section_aggregates(self):
+        """PDF CIMAF : pour chaque section, totaux des lignes produit *au-dessus* (toutes colonnes numériques)."""
+        self.ensure_one()
         mapping = {}
         lines_list = list(self.cmaf_line_ids.sorted(lambda l: (l.sequence or 0, l.id)))
         prev_section_index = -1
         for i, line in enumerate(lines_list):
             if line.display_type != 'line_section':
                 continue
-            total_net_sum = 0.0
+            block = []
             for j in range(prev_section_index + 1, i):
                 pl = lines_list[j]
                 if pl.display_type == 'product':
-                    total_net_sum += float(pl.total_net or 0.0)
-            mapping[line.id] = total_net_sum
+                    block.append(pl)
+            p1 = sum(pl.poids_1ere or 0.0 for pl in block)
+            p2 = sum(pl.poids_2eme or 0.0 for pl in block)
+            pn = sum(pl.poids_net or 0.0 for pl in block)
+            pnt = sum(pl.poids_net_tonne or 0.0 for pl in block)
+            m_htva = sum(float(pl.montant_htva or 0.0) for pl in block)
+            ret = sum(float(pl.retenue_5 or 0.0) for pl in block)
+            tnet = sum(float(pl.total_net or 0.0) for pl in block)
+            tonnes = sum(pl.poids_net_tonne or 0.0 for pl in block)
+            if tonnes > 0.0:
+                prix_m = (
+                    sum((pl.prix_tonne or 0.0) * (pl.poids_net_tonne or 0.0) for pl in block)
+                    / tonnes
+                )
+            elif block:
+                prix_m = sum(pl.prix_tonne or 0.0 for pl in block) / len(block)
+            else:
+                prix_m = 0.0
+            mapping[line.id] = {
+                'poids_1ere': p1,
+                'poids_2eme': p2,
+                'poids_net': pn,
+                'poids_net_tonne': pnt,
+                'prix_tonne': prix_m,
+                'montant_htva': m_htva,
+                'retenue_5': ret,
+                'total_net': tnet,
+            }
             prev_section_index = i
         return mapping
 
