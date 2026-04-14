@@ -111,7 +111,7 @@
                     </group>
                 </group>
                 <group string="Arrêté"
-                       invisible="x_invoice_type in ('transport', 'cmaf') or not x_montant_lettres">
+                       invisible="not x_montant_lettres">
                     <field name="x_montant_lettres"
                            string="Arrêtée la présente facture à la somme de"
                            readonly="1"
