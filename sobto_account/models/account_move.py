@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
@@ -124,6 +124,14 @@ class AccountMove(models.Model):
         if load_objet and not res.get('x_objet'):
             inv_type = res.get('x_invoice_type', 'transit')
             res['x_objet'] = self._get_default_x_objet(inv_type)
+        load_due_date = fields_list is None or 'invoice_date_due' in fields_list
+        if (
+            load_due_date
+            and res.get('move_type') in ('out_invoice', 'out_refund')
+            and not res.get('invoice_date_due')
+        ):
+            inv_date = fields.Date.to_date(res.get('invoice_date')) or fields.Date.context_today(self)
+            res['invoice_date_due'] = inv_date + timedelta(days=30)
         return res
 
     @api.model
@@ -362,6 +370,12 @@ class AccountMove(models.Model):
             inv_type = vals.get('x_invoice_type', 'transit')
             if not vals.get('x_objet'):
                 vals['x_objet'] = self._get_default_x_objet(inv_type)
+            if (
+                vals.get('move_type') in ('out_invoice', 'out_refund')
+                and not vals.get('invoice_date_due')
+            ):
+                inv_date = fields.Date.to_date(vals.get('invoice_date')) or fields.Date.context_today(self)
+                vals['invoice_date_due'] = inv_date + timedelta(days=30)
         moves = super().create(vals_list)
         for move in moves:
             if move.x_invoice_type == 'transport' and move.state == 'draft':
@@ -599,3 +613,25 @@ class AccountMove(models.Model):
                         "Veuillez compléter la fiche client avant de continuer."
                     ) % (move.partner_id.name, ', '.join(manquants)))
         return super().action_post()
+
+    def _sobto_clean_report_filename(self, filename):
+        """Supprime le suffixe proforma du nom de fichier téléchargé."""
+        if not filename:
+            return filename
+        clean_name = filename.replace('_proforma', '')
+        clean_name = clean_name.replace(' proforma', '')
+        clean_name = clean_name.replace('PROFORMA', '')
+        return clean_name
+
+    def _get_report_base_filename(self):
+        filename = super()._get_report_base_filename()
+        if self.move_type in ('out_invoice', 'out_refund'):
+            return self._sobto_clean_report_filename(filename)
+        return filename
+
+    def get_invoice_pdf_report_filename(self):
+        super_method = getattr(super(), 'get_invoice_pdf_report_filename', None)
+        filename = super_method() if super_method else self._get_report_base_filename()
+        if self.move_type in ('out_invoice', 'out_refund'):
+            return self._sobto_clean_report_filename(filename)
+        return filename

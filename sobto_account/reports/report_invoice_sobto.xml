@@ -145,6 +145,10 @@
                                 </t>
                             </tfoot>
                         </table>
+                        <div t-if="o.x_montant_lettres" style="margin-top:20px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">
+                            Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
+                            <strong t-out="o.x_montant_lettres"/>
+                        </div>
                     </t>
 
                     <!-- Tableau CIMAF (pesée / tonne / retenue 5 %) — tout centré, en-tête répété en impression -->
@@ -269,6 +273,10 @@
                                 </t>
                             </tfoot>
                         </table>
+                        <div t-if="o.x_montant_lettres" style="margin-top:20px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">
+                            Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
+                            <strong t-out="o.x_montant_lettres"/>
+                        </div>
                     </t>
 
                     <!-- Facture simple : lignes Odoo standard (même style en-tête que Transit/Transport : fond blanc) ; tableau centré uniquement ici -->
@@ -451,18 +459,14 @@
                     </table>
                     </t>
 
-                    <!-- Montant lettres (Transit / Transport : pas CIMAF) -->
-                    <div t-if="o.x_montant_lettres and o.x_invoice_type != 'cmaf'" style="margin-top:28px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">
+                    <!-- Montant lettres (Transit / Simple) -->
+                    <div t-if="o.x_montant_lettres and o.x_invoice_type in ('transit', 'simple')" style="margin-top:28px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">
                         Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
                         <strong t-out="o.x_montant_lettres"/>
                     </div>
 
                     <!-- Bloc légal + paiement réservé CIMAF -->
                     <div t-if="o.x_invoice_type == 'cmaf'" style="margin-top:28px;font-size:13px;font-family:Arial,Helvetica,sans-serif;line-height:1.55;">
-                        <div t-if="o.x_montant_lettres">
-                            Arr&#234;t&#233;e la pr&#233;sente facture &#224; la somme de
-                            <strong t-out="o.x_montant_lettres"/>
-                        </div>
                         <div t-if="o.company_id.x_cmaf_payment_rib" style="margin-top:14px;">
                             MERCI D'UTILISER LA COMMUNICATION SUIVANTE POUR VOTRE PAIEMENT :
                             <t t-if="o.name and o.name != '/'"><t t-out="o.name"/></t>
