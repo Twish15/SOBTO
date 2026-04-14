@@ -127,7 +127,12 @@ class AccountMove(models.Model):
         load_due_date = fields_list is None or 'invoice_date_due' in fields_list
         if (
             load_due_date
-            and res.get('move_type') in ('out_invoice', 'out_refund')
+            and res.get('move_type') in (
+                'out_invoice',
+                'out_refund',
+                'in_invoice',
+                'in_refund',
+            )
             and not res.get('invoice_date_due')
         ):
             inv_date = fields.Date.to_date(res.get('invoice_date')) or fields.Date.context_today(self)
@@ -371,7 +376,12 @@ class AccountMove(models.Model):
             if not vals.get('x_objet'):
                 vals['x_objet'] = self._get_default_x_objet(inv_type)
             if (
-                vals.get('move_type') in ('out_invoice', 'out_refund')
+                vals.get('move_type') in (
+                    'out_invoice',
+                    'out_refund',
+                    'in_invoice',
+                    'in_refund',
+                )
                 and not vals.get('invoice_date_due')
             ):
                 inv_date = fields.Date.to_date(vals.get('invoice_date')) or fields.Date.context_today(self)
@@ -629,9 +639,15 @@ class AccountMove(models.Model):
             return self._sobto_clean_report_filename(filename)
         return filename
 
-    def get_invoice_pdf_report_filename(self):
-        super_method = getattr(super(), 'get_invoice_pdf_report_filename', None)
-        filename = super_method() if super_method else self._get_report_base_filename()
+    def _get_invoice_report_filename(self, extension='pdf'):
+        filename = super()._get_invoice_report_filename(extension=extension)
+        if self.move_type in ('out_invoice', 'out_refund'):
+            return self._sobto_clean_report_filename(filename)
+        return filename
+
+    def _get_invoice_proforma_pdf_report_filename(self):
+        """Supprime le suffixe proforma du nom de fichier PDF."""
+        filename = super()._get_invoice_proforma_pdf_report_filename()
         if self.move_type in ('out_invoice', 'out_refund'):
             return self._sobto_clean_report_filename(filename)
         return filename
