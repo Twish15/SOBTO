@@ -7,3 +7,4 @@ from . import cmaf_invoice_line
 from . import res_company
 from . import res_partner
 from . import report_account_invoice
+from . import sale_order

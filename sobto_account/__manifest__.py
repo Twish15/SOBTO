@@ -22,6 +22,7 @@
         'reports/report_invoice_sobto.xml',
         'reports/report_invoice_actions.xml',
         'reports/report_invoice_sobto_action.xml',
+        'reports/report_saleorder_sobto.xml',
     ],
     'installable': True,
     'auto_install': False,

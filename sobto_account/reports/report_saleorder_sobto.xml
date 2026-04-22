@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_sobto">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="header">
+                    <div style="padding:8px 25px;text-align:left;background-color:#ffffff;">
+                        <img t-if="o.company_id.logo"
+                             style="max-height:520px;max-width:100%;width:auto;height:auto;"
+                             t-attf-src="/web/image/res.company/#{o.company_id.id}/logo"/>
+                    </div>
+                </div>
+
+                <div class="article" style="margin:0 25px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.45;color:#000;">
+                    <div style="text-align:right;margin-bottom:8px;margin-top:0;padding-top:0;font-size:13px;color:#333;font-family:Arial,Helvetica,sans-serif;">
+                        <t t-out="o.company_id.partner_id.city or o.company_id.city or 'Ouagadougou'"/>, le
+                        <t t-out="o.x_date_order_fr"/>
+                    </div>
+
+                    <div style="background-color:#6b9eb5;color:white;padding:8px 20px;text-align:center;font-weight:bold;font-size:16px;margin:10px 0;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">
+                        <t t-out="o.name or 'FACTURE/PRO FORMA/IBTC/----/N°----'"/>
+                    </div>
+
+                    <div style="margin-bottom:10px;font-size:13px;text-align:left;padding-left:0;">
+                        <div><strong>DOIT : <t t-out="o.partner_id.name"/></strong></div>
+                        <t t-if="o.partner_id.street"><div t-out="o.partner_id.street"/></t>
+                        <t t-if="o.partner_id.x_rccm"><div>N&#176; RCCM: <t t-out="o.partner_id.x_rccm"/></div></t>
+                        <t t-if="o.partner_id.x_ifu"><div>N&#176; IFU : <t t-out="o.partner_id.x_ifu"/></div></t>
+                        <t t-if="o.partner_id.phone"><div>TEL : <t t-out="o.partner_id.phone"/></div></t>
+                        <t t-if="o.partner_id.x_dge_rni"><div t-out="o.partner_id.x_dge_rni"/></t>
+                    </div>
+
+                    <table style="border:1px solid #555;width:100%;border-collapse:collapse;font-size:13px;font-family:Arial,Helvetica,sans-serif;background-color:#ffffff;text-align:center;">
+                        <thead>
+                            <tr style="font-size:16px;font-family:Arial,Helvetica,sans-serif;">
+                                <th style="border:1px solid #555;padding:9px 6px;text-align:center;font-weight:bold;background-color:#ffffff;color:#000;vertical-align:middle;width:46%;">Description</th>
+                                <th style="border:1px solid #555;padding:9px 6px;text-align:center;font-weight:bold;background-color:#ffffff;color:#000;vertical-align:middle;width:14%;">Quantit&#233;</th>
+                                <th style="border:1px solid #555;padding:9px 6px;text-align:center;font-weight:bold;background-color:#ffffff;color:#000;vertical-align:middle;width:20%;">Prix Unitaire</th>
+                                <th style="border:1px solid #555;padding:9px 6px;text-align:center;font-weight:bold;background-color:#ffffff;color:#000;vertical-align:middle;width:20%;">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.order_line" t-as="line">
+                                <t t-if="line.display_type == 'line_section'">
+                                    <tr>
+                                        <td colspan="4" style="border:1px solid #555;padding:8px 10px;text-align:center;vertical-align:middle;font-weight:bold;background-color:#f0f4f6;">
+                                            <t t-out="line.name or ''"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-elif="line.display_type == 'line_note'">
+                                    <tr>
+                                        <td colspan="4" style="border:1px solid #555;padding:6px 10px;text-align:center;vertical-align:middle;font-style:italic;color:#444;">
+                                            <t t-out="line.name or ''"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <tr>
+                                        <td style="border:1px solid #555;padding:8px 6px;text-align:left;vertical-align:middle;">
+                                            <t t-out="line.name or ''"/>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 6px;text-align:center;vertical-align:middle;">
+                                            <span t-field="line.product_uom_qty" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 6px;text-align:center;vertical-align:middle;">
+                                            <span t-field="line.price_unit" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td style="border:1px solid #555;padding:8px 6px;text-align:center;vertical-align:middle;">
+                                            <t t-out="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/> CFA
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;">Montant Total HT</td>
+                                <td style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;">
+                                    <t t-out="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/> CFA
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;">Taxes</td>
+                                <td style="border:1px solid #555;padding:8px 6px;text-align:center;vertical-align:middle;">
+                                    <t t-out="'{:,.0f}'.format(o.amount_tax).replace(',', ' ')"/> CFA
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;color:#b00020;">Total TTC</td>
+                                <td style="border:1px solid #555;padding:8px 6px;text-align:center;font-weight:bold;vertical-align:middle;color:#b00020;">
+                                    <t t-out="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/> CFA
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div t-if="o.x_montant_lettres_devis" style="margin-top:24px;font-size:13px;font-family:Arial,Helvetica,sans-serif;">
+                        Arr&#234;t&#233;e la pr&#233;sente proforma &#224; la somme de
+                        <strong t-out="o.x_montant_lettres_devis"/>
+                    </div>
+
+                    <div style="margin-top:35px;font-family:Arial,Helvetica,sans-serif;text-align:right;padding-right:10%;padding-left:25%;">
+                        <div style="font-weight:bold;">Directeur G&#233;n&#233;ral</div>
+                        <div style="margin-top:72px;font-weight:bold;">Yaya OUATTARA</div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="sale.action_report_saleorder" model="ir.actions.report">
+        <field name="report_name">sobto_account.report_saleorder_sobto</field>
+        <field name="report_file">sobto_account.report_saleorder_sobto</field>
+    </record>
+</odoo>
